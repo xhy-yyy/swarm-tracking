@@ -1,0 +1,10 @@
+# Versions observed in the original vision environment. Install torch and
+# torchvision with the matching CUDA wheel index for your GPU; see installation.md.
+torch==2.12.0
+torchvision==0.27.0
+ultralytics==8.4.57
+numpy==2.2.6
+opencv-python==4.13.0.92
+scipy==1.15.3
+PyYAML==6.0.3
+rospkg==1.6.1

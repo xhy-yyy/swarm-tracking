@@ -1,0 +1,16 @@
+name: ROS build and regression tests
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ros:noetic-ros-base-focal
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: bash scripts/install_dependencies.sh
+      - name: Build core workspace
+        shell: bash
+        run: bash scripts/build.sh
+      - name: Run regression tests
+        shell: bash
+        run: bash scripts/test.sh

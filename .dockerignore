@@ -1,0 +1,12 @@
+.git
+build
+devel
+install
+logs
+.catkin_tools
+external
+dist
+assets/models
+assets/weights
+config/runtime.env
+**/__pycache__

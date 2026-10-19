@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- 只起 PX4 SITL, 不 spawn 模型.                                          -->
+<!-- 对照 $(find px4)/launch/single_vehicle_spawn_xtd.launch: 删掉了         -->
+<!-- xmlstarlet 生成 model_description + gazebo_ros spawn_model 两步,        -->
+<!-- 因为飞机已经由 gen_world_with_vehicles.py 内联进 world, 在 world 加载    -->
+<!-- 阶段就位了 (机上挂 CPU 版官方 ray 雷达时, 运行期 spawn 会撞上 ODE 的     -->
+<!-- 线程安全问题直接 SIGSEGV, 详见那个脚本头部的说明).                       -->
+<!-- 端口约定必须和 world 里内联的一致: mavlink_tcp_port = 4560 + ID,        -->
+<!-- udp_gimbal_port_remote = 13030 + ID (PX4 SITL 自己按 -i ID 算 tcp 端口). -->
+<launch>
+    <arg name="est" default="ekf2"/>
+    <arg name="vehicle" default="plane"/>
+    <arg name="ID" default="0"/>
+    <env name="PX4_SIM_MODEL" value="$(arg vehicle)" />
+    <env name="PX4_ESTIMATOR" value="$(arg est)" />
+    <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+    <arg name="interactive" default="true"/>
+    <arg unless="$(arg interactive)" name="px4_command_arg1" value=""/>
+    <arg     if="$(arg interactive)" name="px4_command_arg1" value="-d"/>
+    <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+          args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)">
+    </node>
+</launch>

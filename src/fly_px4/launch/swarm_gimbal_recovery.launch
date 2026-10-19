@@ -1,0 +1,10 @@
+<launch>
+  <arg name="drone_num" default="6"/>
+  <arg name="ns_prefix" default="typhoon_h480"/>
+  <arg name="config_file" default="$(find fly_px4)/config/gimbal_recovery.yaml"/>
+  <node pkg="fly_px4" type="swarm_gimbal_recovery.py" name="swarm_gimbal_recovery" output="screen">
+    <rosparam file="$(arg config_file)" command="load"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <param name="ns_prefix" value="$(arg ns_prefix)"/>
+  </node>
+</launch>

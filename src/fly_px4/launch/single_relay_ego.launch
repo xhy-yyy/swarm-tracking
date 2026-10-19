@@ -1,0 +1,226 @@
+<launch>
+  <!-- 单机世界帧桥接、二维 EGO 与 traj_server，由 swarm_relay_ego.launch 包含。 -->
+
+  <arg name="drone_id"/>        <!-- 1..6, 与 fly_px4_1 的 drone_id 一致 -->
+  <arg name="xtdrone_idx"/>     <!-- = drone_id - 1, 话题 ns 索引 -->
+  <!-- 六机由 start_positions_file 配置；init_x/y 仅保留单机调试兼容。 -->
+  <arg name="start_positions_file" default=""/>
+  <arg name="init_x" default="0"/>
+  <arg name="init_y" default="0"/>
+  <arg name="init_z" default="0"/>
+
+  <arg name="slab_bottom"/>
+  <arg name="slab_thick"/>
+  <arg name="map_size_x"/>
+  <arg name="map_size_y"/>
+  <arg name="resolution"/>
+  <arg name="max_vel"/>
+  <arg name="max_acc"/>
+  <arg name="planning_horizon"/>
+  <arg name="sensor_range"/>
+  <arg name="lidar_skip"/>
+  <arg name="inflation"/>
+  <arg name="cam_pitch_deg"/>
+  <arg name="depth_topic"/>
+  <arg name="plane_mode" default="true"/>
+  <arg name="plane_z" default="4.5"/>
+  <arg name="lambda_smooth"/>
+  <arg name="lambda_collision"/>
+  <arg name="dist0"/>
+  <!-- 深度相机 + 雷达高度记忆加入避障 (body_band_cloud.py); false = 完全回到只用二维雷达 -->
+  <arg name="body_band" default="true"/>
+
+  <arg name="ns" default="typhoon_h480_$(arg xtdrone_idx)"/>
+  <!-- ego 内部的 drone_id 用 0-based (它拿这个当 swarm_trajs_buf_ 下标) -->
+  <arg name="ego_id" default="$(arg xtdrone_idx)"/>
+
+  <!-- 用已知起点和尺度桥接本地估计：odom_world_relay 供融合与 EGO，pose_relay 供相机几何。 -->
+  <node pkg="fly_px4" type="odom_world_relay.py" name="odom_relay_$(arg drone_id)" output="screen" clear_params="true">
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"
+              if="$(eval arg('start_positions_file') != '')"/>
+    <param name="start_position_key" value="drone_$(arg drone_id)"
+           if="$(eval arg('start_positions_file') != '')"/>
+    <param name="odom_in"  value="/$(arg ns)/mavros/local_position/odom"/>
+    <param name="odom_out" value="/$(arg ns)/odom_world_relay"/>
+    <param name="pose_in"  value="/$(arg ns)/mavros/local_position/pose"/>
+    <param name="pose_out" value="/$(arg ns)/pose_relay"/>
+    <param name="offset_x" value="$(arg init_x)"/>
+    <param name="offset_y" value="$(arg init_y)"/>
+    <param name="offset_z" value="$(arg init_z)"/>
+    <param name="apply_cam_transform" value="true"/>
+    <!-- 深度相机挂在云台末端(cgo3_camera_link), 云台把 roll/pitch 世界稳定到 0,
+         所以相机姿态只能取机体 yaw. 详见 odom_world_relay.py 的说明. -->
+    <param name="gimbal_stabilized" value="true"/>
+    <!-- 相机相对云台挂点的静态下倾安装角, 必须 = sdf 里 realsense <include><pose> 的 pitch -->
+    <param name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+  </node>
+
+  <!-- 将水平稳定云台上的二维雷达按机体偏航转到 world 点云。 -->
+  <node pkg="fly_px4" type="laser_scan_to_world_cloud.py" name="lidar_cloud_$(arg drone_id)" output="screen">
+    <remap from="~scan_in"   to="/$(arg ns)/scan"/>
+    <remap from="~odom_in"   to="/$(arg ns)/odom_world_relay"/>
+    <remap from="~cloud_out" to="/$(arg ns)/lidar_cloud_world"/>
+    <param name="frame_id" value="world"/>
+    <param name="min_range" value="0.5"/>
+    <param name="max_range" value="0"/>          <!-- 0 = 不限制, 用雷达原始 20m; grid_map 的 12m 局部范围自然截断 -->
+    <param name="throttle" value="0.033"/>       <!-- 雷达 500Hz 太高, 降到 ~30Hz 足够 -->
+    <param name="skip" value="$(arg lidar_skip)"/>    <!-- 每 N 条光束留 1 条, 控制点云密度 -->
+    <param name="plane_z" value="$(arg plane_z)"/>   <!-- 压到 ego 二维规划的 plane_z, 否则跟踪高度下障碍对规划器不可见 -->
+    <!-- 真实高度雷达点 (给 body_band_cloud 的高度记忆) 与 雷达+高度带合并点云 (给 ego) -->
+    <param name="lidar_z" value="-0.1125"/>
+    <remap from="~cloud_out_3d" to="/$(arg ns)/lidar_cloud_world_3d"/>
+    <remap from="~band_in"      to="/$(arg ns)/body_band_cloud"/>
+    <remap from="~merged_out"   to="/$(arg ns)/obstacle_cloud_world"/>
+  </node>
+
+  <!-- 深度和雷达高度记忆补充机体高度带障碍，仅跟踪或跟踪后归航激活；碰撞与视线用途分开。 -->
+  <node if="$(arg body_band)" pkg="fly_px4" type="body_band_cloud.py" name="body_band_$(arg drone_id)"
+        output="screen" respawn="true">
+    <param name="ns" value="$(arg ns)"/>
+    <param name="offset_z" value="$(arg init_z)"/>   <!-- 与 odom_relay 相同, 把本地目标高度换到 relay 帧 -->
+    <param name="plane_z" value="$(arg plane_z)"/>
+    <param name="gimbal_status_topic" value="/gimbal_recovery/status_$(arg drone_id)"/>
+  </node>
+
+  <!-- ego_planner (二维薄片) -->
+  <!-- launch-prefix 清理 racer_ws 的同名库搜索路径，避免 EGO 加载错误共享库。 -->
+  <node pkg="ego_planner" name="ego_planner_$(arg drone_id)" type="ego_planner_node" output="screen"
+        respawn="true"
+        launch-prefix="$(find fly_px4)/scripts/with_catkin_libs.sh">
+
+    <!-- == 输入 == -->
+    <remap from="~odom_world"    to="/$(arg ns)/odom_world_relay"/>
+    <remap from="~grid_map/odom" to="/$(arg ns)/odom_world_relay"/>
+    <!-- pose_type=0 仅使用点云通道；grid_map/odom 仍提供局部更新中心。 -->
+    <param name="grid_map/pose_type" value="0"/>
+    <remap from="~grid_map/depth" to="/unused/depth_$(arg drone_id)"/>
+    <!-- 雷达和高度带障碍必须合成同一帧，避免 cloudCallback 清空局部地图时相互覆盖。 -->
+    <remap from="~grid_map/cloud" to="/$(arg ns)/obstacle_cloud_world"/>
+
+    <!-- 目标点: ego 订的是**全局名** /move_base_simple/goal, 六机必须各自 remap 开,
+         否则一发目标六架机一起飞过去 -->
+    <remap from="/move_base_simple/goal" to="/ego_goal_$(arg drone_id)"/>
+    <!-- 主控通过运行时接口切换速度和加速度上限。 -->
+    <remap from="~speed_limit" to="/ego_speed_$(arg drone_id)"/>
+    <!-- 运动目标的末端速度接口。 -->
+    <remap from="~goal_vel" to="/ego_goal_vel_$(arg drone_id)"/>
+    <!-- 轨迹碰撞检查开关，由主控按巡逻/跟踪状态切换。 -->
+    <remap from="~disable_collision_check" to="/ego_disable_collision_$(arg drone_id)"/>
+
+    <!-- == 输出 == -->
+    <remap from="~planning/bspline"      to="/drone_$(arg ego_id)_planning/bspline"/>
+    <remap from="~planning/data_display"  to="/drone_$(arg ego_id)_planning/data_display"/>
+    <!-- 机间避障: 六机的 broadcast 都接到同一个话题上, 各机按 drone_id 忽略自己
+         (BroadcastBsplineCallback 开头就 return), 单 master 下白拿轨迹级相互避让 -->
+    <remap from="~planning/broadcast_bspline_from_planner" to="/broadcast_bspline"/>
+    <remap from="~planning/broadcast_bspline_to_planner"   to="/broadcast_bspline"/>
+
+    <!-- == FSM == -->
+    <param name="fsm/flight_type" value="1"/>          <!-- 1 = MANUAL_TARGET, 由 fly_px4_1 逐点发 -->
+    <param name="fsm/thresh_replan_time" value="1.0"/>
+    <param name="fsm/thresh_no_replan_meter" value="1.0"/>
+    <!-- 轨迹计时结束后仍须实际距目标 <=1m；未到点就从里程计继续规划。 -->
+    <param name="fsm/goal_reached_thresh" value="1.0"/>
+    <!-- 必须远大于刹车距离 v^2/2a = 9m, 否则每 7.5m 就减速一次, 跑不到 12m/s -->
+    <param name="fsm/planning_horizon" value="$(arg planning_horizon)"/>
+    <param name="fsm/planning_horizen_time" value="3.0"/>
+    <!-- 1s = 12m 前方, 正好对上 10m 的传感器视距 -->
+    <param name="fsm/emergency_time" value="1.0"/>
+    <param name="fsm/realworld_experiment" value="false"/>
+    <param name="fsm/fail_safe" value="true"/>
+    <!-- 六机可独立启动，不串行等待前机首条轨迹。 -->
+    <param name="fsm/seq_start_timeout" value="10.0"/>
+    <param name="fsm/waypoint_num" value="0"/>
+
+    <!-- == 栅格地图: 做成一层薄片 => 二维规划 ==
+         getInflateOccupancy 在地图外返回 -1(真值=占据), 所以薄片外自动不可飞,
+         规划被压在 z ∈ [slab_bottom, slab_bottom+slab_thick] = [2.2, 5.2] 内。 -->
+    <param name="grid_map/resolution" value="$(arg resolution)"/>
+    <param name="grid_map/map_size_x" value="$(arg map_size_x)"/>
+    <param name="grid_map/map_size_y" value="$(arg map_size_y)"/>
+    <param name="grid_map/map_size_z" value="$(arg slab_thick)"/>
+    <!-- map_origin_(2) = ground_height (grid_map.cpp:57), 即薄片下界 -->
+    <param name="grid_map/ground_height" value="$(arg slab_bottom)"/>
+    <!-- 关掉虚拟天花板: 片顶已经是"地图外=占据"了, 再开一层反而有 ceil_id 越界写的风险 -->
+    <param name="grid_map/virtual_ceil_height" value="-1"/>
+    <!-- 局部更新半径 = 传感器视距 + 2m 余量. cloudCallback 每次扫描先清空这
+         范围内的占据再重填, 所以它同时决定了"能记多远的障碍". 二维雷达看到
+         20m, 这里取 sensor_range(20)+2=22m, 不再被 12m 截断. -->
+    <param name="grid_map/local_update_range_x" value="$(eval arg('sensor_range') + 2.0)"/>
+    <param name="grid_map/local_update_range_y" value="$(eval arg('sensor_range') + 2.0)"/>
+    <param name="grid_map/local_update_range_z" value="2.0"/>
+    <!-- 障碍物膨胀半径。跟踪贴楼时 0.6 离墙太近, 0.8 多留 0.2m 余量;
+         plane_mode 下薄片 [3.2,6.2] 厚 3m, 不会再"把自己包住出不来" (旧注释
+         针对 1.4m 薄片, 已过时) -->
+    <param name="grid_map/obstacles_inflation" value="$(arg inflation)"/>
+    <param name="grid_map/local_map_margin" value="10"/>
+    <param name="grid_map/frame_id" value="world"/>
+    <param name="grid_map/visualization_truncate_height" value="6.0"/>
+    <param name="grid_map/show_occ_time" value="false"/>
+
+    <!-- 深度滤波. 深度插件 pointCloudCutoffMax=10, 超过 10m 是 NaN, 别当真 -->
+    <param name="grid_map/use_depth_filter" value="true"/>
+    <param name="grid_map/depth_filter_mindist" value="0.5"/>
+    <param name="grid_map/depth_filter_maxdist" value="$(arg sensor_range)"/>
+    <param name="grid_map/depth_filter_tolerance" value="0.15"/>
+    <param name="grid_map/depth_filter_margin" value="2"/>
+    <param name="grid_map/k_depth_scaling_factor" value="1000.0"/>
+    <param name="grid_map/skip_pixel" value="2"/>
+    <!-- 相机内参. 由 sdf 推出: 640x480, HFOV=1.047198rad(60 度)
+         fx = fy = (640/2)/tan(30 度) = 554.256, cx,cy = 320,240
+         与 swarm_vision.py:52-55 用的是同一组值(那边已按这个标定跑通检测)。 -->
+    <param name="grid_map/cx" value="320.0"/>
+    <param name="grid_map/cy" value="240.0"/>
+    <param name="grid_map/fx" value="554.255971"/>
+    <param name="grid_map/fy" value="554.255971"/>
+
+    <param name="grid_map/p_hit" value="0.65"/>
+    <param name="grid_map/p_miss" value="0.35"/>
+    <param name="grid_map/p_min" value="0.12"/>
+    <param name="grid_map/p_max" value="0.90"/>
+    <param name="grid_map/p_occ" value="0.80"/>
+    <param name="grid_map/min_ray_length" value="0.5"/>
+    <param name="grid_map/max_ray_length" value="$(arg sensor_range)"/>
+
+    <!-- manager/max_vel 与 optimization/max_vel 同步更新；bspline/limit_* 为最终可行性阈值。 -->
+    <param name="manager/max_vel" value="$(arg max_vel)"/>
+    <param name="manager/max_acc" value="$(arg max_acc)"/>
+    <param name="manager/max_jerk" value="8.0"/>
+    <!-- ts = ctrl_pt_dist / max_vel * 1.5 = 2.0/12*1.5 = 0.25 s/控制点 -->
+    <param name="manager/control_points_distance" value="2.0"/>
+    <param name="manager/feasibility_tolerance" value="0.05"/>
+    <param name="manager/planning_horizon" value="$(arg planning_horizon)"/>
+    <param name="manager/use_distinctive_trajs" value="true"/>
+    <param name="manager/drone_id" value="$(arg ego_id)"/>
+    <!-- plane_mode 将全局轨迹、A* 和 B 样条固定到 plane_z，须与雷达投影一致。
+         实际高度由 fly_px4_1 的连续 Z 参考控制，独立于虚拟规划平面。 -->
+    <param name="manager/plane_mode" value="$(arg plane_mode)"/>
+    <param name="manager/plane_z" value="$(arg plane_z)"/>
+
+    <param name="optimization/lambda_smooth" value="$(arg lambda_smooth)"/>
+    <param name="optimization/lambda_collision" value="$(arg lambda_collision)"/>
+    <param name="optimization/lambda_feasibility" value="0.1"/>
+    <param name="optimization/lambda_fitness" value="1.0"/>
+    <param name="optimization/dist0" value="$(arg dist0)"/>
+    <!-- 机间最小间距. 航线本身已用 1.5m 内偏车道(横向 3.0m) + 0.4m 高度棋盘错开 -->
+    <param name="optimization/swarm_clearance" value="1.5"/>
+    <param name="optimization/max_vel" value="$(arg max_vel)"/>
+    <param name="optimization/max_acc" value="$(arg max_acc)"/>
+
+    <param name="bspline/limit_vel" value="$(arg max_vel)"/>
+    <param name="bspline/limit_acc" value="$(arg max_acc)"/>
+    <param name="bspline/limit_ratio" value="1.1"/>
+  </node>
+
+  <!-- traj_server: B样条 -> PositionCommand -->
+  <node pkg="ego_planner" name="traj_server_$(arg drone_id)" type="traj_server" output="screen"
+        respawn="true"
+        launch-prefix="$(find fly_px4)/scripts/with_catkin_libs.sh">
+    <remap from="~planning/bspline" to="/drone_$(arg ego_id)_planning/bspline"/>
+    <!-- /position_cmd 是**全局名**, 六机必须各自 remap 开 -->
+    <remap from="/position_cmd" to="/ego/pos_cmd_$(arg drone_id)"/>
+    <remap from="/pose_cmd"     to="/ego/pose_cmd_$(arg drone_id)"/>
+    <param name="traj_server/time_forward" value="1.0"/>
+  </node>
+
+</launch>

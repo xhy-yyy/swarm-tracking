@@ -1,0 +1,128 @@
+{
+  "models": [
+    {
+      "model": "hokuyo_lidar",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 98089
+    },
+    {
+      "model": "realsense_camera",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 230136
+    },
+    {
+      "model": "typhoon_h480",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 14210499
+    },
+    {
+      "model": "gps",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 3178
+    },
+    {
+      "model": "walker",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 17554461
+    },
+    {
+      "model": "ocean",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 24153507
+    },
+    {
+      "model": "city_terrain",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 3880184
+    },
+    {
+      "model": "house_1",
+      "origin": "gazebo_models",
+      "bytes": 2145620
+    },
+    {
+      "model": "house_3",
+      "origin": "gazebo_models",
+      "bytes": 1036906
+    },
+    {
+      "model": "house_2",
+      "origin": "gazebo_models",
+      "bytes": 1112256
+    },
+    {
+      "model": "gas_station",
+      "origin": "gazebo_models",
+      "bytes": 2162925
+    },
+    {
+      "model": "fire_hydrant",
+      "origin": "gazebo_models",
+      "bytes": 677204
+    },
+    {
+      "model": "fast_food",
+      "origin": "gazebo_models",
+      "bytes": 3468080
+    },
+    {
+      "model": "dumpster",
+      "origin": "gazebo_models",
+      "bytes": 2049741
+    },
+    {
+      "model": "cardboard_box",
+      "origin": "gazebo_models",
+      "bytes": 379154
+    },
+    {
+      "model": "stop_sign",
+      "origin": "gazebo_models",
+      "bytes": 655758
+    },
+    {
+      "model": "lamp_post",
+      "origin": "gazebo_models",
+      "bytes": 2482272
+    },
+    {
+      "model": "casual_female",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 30117344
+    },
+    {
+      "model": "europallet",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 166050
+    },
+    {
+      "model": "shelves_high",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 7243094
+    },
+    {
+      "model": "shelves_high2",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 5614659
+    },
+    {
+      "model": "cessna",
+      "origin": "gazebo_models",
+      "bytes": 961702
+    },
+    {
+      "model": "House",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 5117607
+    },
+    {
+      "model": "sonar",
+      "origin": "PX4-SITL_gazebo",
+      "bytes": 1447
+    }
+  ],
+  "missing": [],
+  "resource_fixes": [
+    "shelves_high and shelves_high2 model.sdf: replace stale model://shelves_2 material roots with each model name"
+  ]
+}

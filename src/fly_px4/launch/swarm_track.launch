@@ -1,0 +1,202 @@
+<launch>
+  <!-- 六机视觉检测、融合分配与标注；在飞行节点前启动。裁判须在起飞前启动。 -->
+
+  <arg name="drone_num" default="6"/>
+  <arg name="ns_prefix" default="typhoon_h480"/>
+
+  <arg name="conf" default="0.7"/>
+  <!-- 两个红人共用 red_conf，其余颜色使用 conf。 -->
+  <arg name="red_conf" default="0.8"/>
+  <!-- 跟踪相机优先处理，搜索相机轮询。 -->
+  <arg name="vision_rate" default="10.0"/>
+  <arg name="half" default="true"/>
+  <!-- 缺少同期相机 IMU 时仅允许单目导航。 -->
+  <arg name="use_camera_imu" default="true"/>
+  <arg name="camera_imu_topic_suffix" default="imu_gazebo"/>
+  <!-- XTDrone 插件使用 initial，标准 Noetic 插件使用 world；初始 RPY 为传感器加载时姿态。 -->
+  <arg name="camera_imu_reference" default="initial"/>
+  <arg name="camera_imu_initial_rpy_deg" default="[0.0, 25.0, 0.0]"/>
+  <arg name="body_odom_topic_suffix" default="odom_world_relay"/>
+  <arg name="lever_arm_model" default="gimbal_kinematics"/>
+  <arg name="imu_max_gap" default="0.02"/>
+  <arg name="sync_wait_sec" default="0.025"/>
+  <arg name="depth_max_dt" default="0.002"/>
+  <arg name="require_camera_info" default="true"/>
+  <!-- 深度单位为米，默认不额外缩放。 -->
+  <arg name="depth_scale" default="1.0"/>
+  <arg name="cls_depth_corr" default="1,1,1,1,1,1"/>
+  <!-- 可信深度用于裁判定位；远距单目仅用于发现与接近。 -->
+  <arg name="min_range" default="3.0"/>
+  <arg name="max_range" default="100.0"/>
+  <!-- annotated=false 关闭标注图和查看窗口。 -->
+  <arg name="annotated" default="true"/>
+
+  <arg name="screen_w" default="1920"/>
+  <arg name="screen_h" default="1080"/>
+
+  <!-- 融合仅使用视觉与里程计，不订阅裁判或 Gazebo 真值。 -->
+  <arg name="warmup_sec" default="3.0"/>
+  <!-- 有效深度到达即发布，定时器维持帧间坐标输出。 -->
+  <arg name="publish_on_measurement" default="true"/>
+  <!-- 检测到显著转向或减速后，抑制陈旧速度的外推位移。 -->
+  <arg name="turn_prediction_guard" default="true"/>
+  <!-- 标定探针仅供专门调试，正常运行保持为 0。 -->
+  <arg name="probe_offset_x" default="0.0"/>
+  <arg name="probe_offset_y" default="0.0"/>
+
+  <!-- 单进程批量推理，包装脚本选择支持当前 GPU 的 Python 环境。 -->
+  <node pkg="fly_px4" type="run_swarm_vision.sh" name="swarm_vision"
+        output="screen" required="false">
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <param name="ns_prefix" value="$(arg ns_prefix)"/>
+    <param name="conf" value="$(arg conf)"/>
+    <param name="red_conf" value="$(arg red_conf)"/>
+    <param name="rate" value="$(arg vision_rate)"/>
+    <param name="half" value="$(arg half)"/>
+    <param name="min_range" value="$(arg min_range)"/>
+    <param name="max_range" value="$(arg max_range)"/>
+    <param name="publish_annotated" value="$(arg annotated)"/>
+    <!-- 按图像时间戳匹配传感器，等待预算由整批共享。 -->
+    <param name="use_camera_imu" value="$(arg use_camera_imu)"/>
+    <param name="camera_imu_topic_suffix" value="$(arg camera_imu_topic_suffix)"/>
+    <param name="camera_imu_reference" value="$(arg camera_imu_reference)"/>
+    <rosparam param="camera_imu_initial_rpy_deg" subst_value="true">$(arg camera_imu_initial_rpy_deg)</rosparam>
+    <param name="body_odom_topic_suffix" value="$(arg body_odom_topic_suffix)"/>
+    <param name="lever_arm_model" value="$(arg lever_arm_model)"/>
+    <param name="imu_max_gap" value="$(arg imu_max_gap)"/>
+    <param name="sync_wait_sec" value="$(arg sync_wait_sec)"/>
+    <param name="require_camera_info" value="$(arg require_camera_info)"/>
+    <param name="pose_position_sigma" value="0.10"/>
+    <param name="camera_attitude_sigma_deg" value="0.5"/>
+    <param name="lever_arm_sigma" value="0.03"/>
+    <param name="pose_max_gap" value="0.06"/>
+    <param name="depth_max_dt" value="$(arg depth_max_dt)"/>
+    <!-- 深度体表到人体中心的修正距离（米）。 -->
+    <param name="body_half_depth" value="0.15"/>
+
+    <param name="depth_scale" value="$(arg depth_scale)"/>
+    <!-- 深度按光轴截断；远框内的近回波需通过单目几何互查。 -->
+    <param name="depth_trust_range" value="12.0"/>
+    <!-- 深度像素数、覆盖率和 MAD 同时达标才可信。 -->
+    <param name="depth_min_pixels" value="20"/>
+    <param name="depth_min_valid_ratio" value="0.10"/>
+    <param name="depth_max_mad" value="0.35"/>
+    <param name="depth_joint_max_diff" value="0.70"/>
+    <param name="depth_size_max_ratio" value="2.5"/>
+    <param name="mono_scale" value="1.0"/>
+    <!-- 单目仅用于导航与互查，不与可信深度坐标平均。 -->
+    <param name="mono_sigma_scale" value="2.0"/>
+    <!-- 从框底上收 foot_margin 个框高以修正脚行。 -->
+    <param name="foot_margin" value="0.12"/>
+    <!-- 深度类别尺度默认全 1；单目类别修正仅用于导航与互查。 -->
+    <param name="cls_depth_corr" value="$(arg cls_depth_corr)"/>
+    <param name="cls_mono_corr" value="0.86,0.86,0.75,0.76,0.92,1"/>
+    <!-- 一致性否决时允许降级为较可信链路；关闭则丢弃整帧。 -->
+    <param name="veto_publish" value="true"/>
+    <!-- 方位角补偿单位为度，默认不补偿。 -->
+    <param name="bearing_corr_deg" value="0.0"/>
+  </node>
+
+  <node pkg="fly_px4" type="swarm_fusion.py" name="swarm_fusion"
+        output="screen" respawn="true" respawn_delay="2.0">
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <param name="ns_prefix" value="$(arg ns_prefix)"/>
+    <param name="publish_on_measurement" value="$(arg publish_on_measurement)"/>
+    <param name="turn_prediction_guard" value="$(arg turn_prediction_guard)"/>
+    <param name="turn_prediction_window" value="0.5"/>
+    <param name="turn_prediction_deg" value="45.0"/>
+    <param name="turn_prediction_decay_sec" value="0.15"/>
+
+    <!-- 行人运动过程噪声，过大会放大速度前馈抖动。 -->
+    <param name="sigma_a" value="1.2"/>
+    <param name="gate_chi2" value="9.21"/>   <!-- chi2_2 @99% -->
+    <param name="gate_abs" value="2.5"/>
+
+    <!-- 发布同时受量测年龄、后验及外推不确定度限制。 -->
+    <param name="pub_rate" value="10.0"/>
+    <param name="max_meas_age" value="0.4"/>
+    <param name="max_pos_std" value="0.35"/>
+    <param name="pub_max_age" value="0.9"/>
+    <param name="pub_max_pos_std" value="0.9"/>
+    <!-- 检测与 KF 预测的水平残差上限（米）。 -->
+    <param name="max_pub_residual" value="1.0"/>
+    <param name="pub_gap_reset" value="0.9"/>
+    <!-- 裁判只接收纯深度航迹；单目和超龄深度仅用于导航。 -->
+    <param name="depth_hold" value="1.0"/>
+    <param name="mono_nav_switch_age" value="0.9"/>
+    <!-- 普通颜色需连续、空间一致的观测才撤销消除状态；红色使用双槽逻辑。 -->
+    <param name="init_gap" value="2.0"/>
+    <param name="init_dist" value="4.0"/>
+    <param name="normal_revive_updates" value="3"/>
+    <param name="normal_revive_sec" value="0.2"/>
+    <param name="normal_revive_gap" value="1.0"/>
+    <param name="normal_revive_dist" value="4.0"/>
+    <!-- 连续发布时长包含裁判采样余量。 -->
+    <param name="lock_need" value="16.5"/>
+    <!-- 发布计满后目标仍可见，等待宽限结束再重试。 -->
+    <param name="judge_grace" value="2.0"/>
+    <!-- 连续计数有效时保留负责机；发布中断后才兑现本机 reject。 -->
+    <param name="count_lock_enable" value="true"/>
+    <!-- 超时释放并短暂拉黑，不将仍可见目标标记为已消除。 -->
+    <param name="track_max_hold" value="150.0"/>
+    <param name="track_blacklist_sec" value="20.0"/>
+
+    <param name="revive_dist" value="3.0"/>
+    <!-- 红槽不绑定 actor 编号；同帧可区分的双红框允许近距离建双槽。 -->
+    <param name="red_distinct_dist" value="3.0"/>
+    <param name="red_confirm_sec" value="0.3"/>
+    <!-- 普通颜色需本任务负责机观测和 TRACK 回执；红色独立检查深度与身份。 -->
+    <param name="tracking_ack_timeout" value="0.6"/>
+    <!-- 短暂回执延迟只停发，持续失效后才释放飞机。 -->
+    <param name="tracking_start_timeout" value="5.0"/>
+    <!-- 负责机续租只认本任务被采用的量测，旁观者观测仅用于接管与重捕。 -->
+    <param name="owner_seen_timeout" value="2.0"/>
+    <!-- 负责机丢失窗口从本次认领开始，独立于全局航迹记忆寿命。 -->
+    <param name="owner_release_timeout" value="8.0"/>
+    <!-- 共享接近允许较长获取窗口，取得本机观测后恢复普通丢失窗口。 -->
+    <param name="shared_acquire_timeout" value="25.0"/>
+    <!-- 保存点已冻结且接手机到达后仍未见人，提前释放任务。 -->
+    <param name="reacq_frozen_age" value="1.5"/>
+    <param name="reacq_arrive_radius" value="9.0"/>
+    <param name="reacq_arrive_hold" value="3.0"/>
+    <!-- 优先交给更近的可靠观察者；消除确认保护窗内不改派。 -->
+    <param name="handover_owner_age" value="2.0"/>
+    <param name="handover_seen" value="0.6"/>
+    <param name="handover_margin" value="3.0"/>
+    <!-- 量测持续失效后才允许重初始化航迹。 -->
+    <param name="gate_reinit_stale" value="1.5"/>
+    <!-- 新位置须由同一架飞机连续确认，避免单帧跳点搬动航迹。 -->
+    <param name="reinit_confirm_sec" value="1.0"/>
+    <param name="reinit_confirm_updates" value="5"/>
+    <param name="reinit_confirm_dist" value="0.8"/>
+    <param name="reinit_confirm_gap" value="0.5"/>
+
+    <!-- 消除点短拉黑仅用于红色身份关联。 -->
+    <param name="elim_radius" value="2.0"/>
+    <param name="elim_blacklist_sec" value="3.0"/>
+    <!-- 消除确认需等待目标持续不可见，避免把短暂遮挡当作消除。 -->
+    <param name="elim_confirm_gap" value="5.0"/>
+    <!-- 已连续发布满时长的目标使用较短消失确认窗。 -->
+    <param name="elim_full_run" value="15.0"/>
+    <param name="elim_confirm_gap_full" value="2.0"/>
+
+    <!-- 一人一机；旧机退出 TRACK 后才改派。lost_timeout 只控制全局航迹记忆。 -->
+    <param name="assign_rate" value="10.0"/>
+    <param name="lost_timeout" value="25.0"/>
+    <!-- 内部全部消除后仍继续巡航复核，再发布 mission_complete。 -->
+    <param name="completion_confirm_sec" value="30.0"/>
+
+    <param name="warmup_sec" value="$(arg warmup_sec)"/>
+    <param name="probe_offset_x" value="$(arg probe_offset_x)"/>
+    <param name="probe_offset_y" value="$(arg probe_offset_y)"/>
+  </node>
+
+  <node if="$(arg annotated)" pkg="fly_px4" type="show_swarm_cams.py"
+        name="show_swarm_cams" output="screen">
+    <param name="screen_w"   value="$(arg screen_w)"/>
+    <param name="screen_h"   value="$(arg screen_h)"/>
+    <param name="grid_rows"  value="2"/>
+    <param name="grid_cols"  value="3"/>
+    <param name="top_margin" value="30"/>
+  </node>
+</launch>

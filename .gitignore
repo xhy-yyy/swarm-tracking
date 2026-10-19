@@ -1,0 +1,27 @@
+# Workspace output
+/build/
+/devel/
+/install/
+/logs/
+/.catkin_tools/
+/Testing/
+/external/
+/dist/
+/assets/weights/*
+/assets/models/*
+!**/.gitkeep
+**/__pycache__/
+*.py[cod]
+*.bag
+*.ulg
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+.env
+.env.local
+.pytest_cache/
+/config/runtime.env

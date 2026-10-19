@@ -1,0 +1,134 @@
+<launch>
+  <arg name="drone_ns" default="typhoon_h480_depth_0"/>
+  <arg name="drone_id" default="0"/>
+
+  <arg name="odom_topic" default="mavros/local_position/odom"/>
+  <arg name="cloud_topic" default="realsense/depth_camera/depth/points"/>
+  <arg name="depth_topic" default="realsense/depth_camera/depth/image_raw"/>
+
+  <!-- 常调参数：目标点 -->
+  <arg name="target_x" default="0"/>     <!-- ★ 目标点 X -->
+  <arg name="target_y" default="0"/>       <!-- ★ 目标点 Y -->
+  <arg name="target_z" default="0"/>     <!-- ★ 目标点 Z（高度） -->
+
+  <!-- 常调参数：地图尺寸 -->
+  <arg name="map_size_x" default="100"/>   <!-- ★ 地图 X 方向尺寸 [m] -->
+  <arg name="map_size_y" default="100"/>   <!-- ★ 地图 Y 方向尺寸 [m] -->
+  <arg name="map_size_z" default="5"/>     <!-- ★ 地图 Z 方向尺寸（高度）[m] -->
+
+  <!-- 桥接节点 -->
+  <node pkg="fly_px4" name="ego_to_mavros" type="ego_to_mavros" output="screen">
+    <param name="drone_ns" value="$(arg drone_ns)"/>
+  </node>
+
+  <!-- 点云坐标变换（RealSense 相机系 → world 系） -->
+  <node pkg="fly_px4" name="cloud_transformer" type="cloud_transformer.py" output="screen">
+    <remap from="~cloud_in" to="/$(arg drone_ns)/$(arg cloud_topic)"/>
+    <remap from="~odom_in" to="/$(arg drone_ns)/mavros/local_position/odom"/>
+    <param name="skip" value="3"/>                              <!-- ★ 点云降采样间隔帧数，增大减少计算量 -->
+  </node>
+
+  <!-- EGO Planner -->
+  <node pkg="ego_planner" name="drone_$(arg drone_id)_ego_planner_node"
+        type="ego_planner_node" output="screen">
+
+    <remap from="~odom_world" to="/$(arg drone_ns)/$(arg odom_topic)"/>
+    <remap from="~planning/bspline" to="/drone_$(arg drone_id)_planning/bspline"/>
+    <remap from="~planning/data_display" to="/drone_$(arg drone_id)_planning/data_display"/>
+    <remap from="~grid_map/odom" to="/$(arg drone_ns)/$(arg odom_topic)"/>
+    <remap from="~grid_map/depth" to="/$(arg drone_ns)/$(arg depth_topic)"/>
+    <remap from="~grid_map/cloud" to="/cloud_transformer/cloud_world"/>
+
+    <!-- 常调参数：FSM 状态机 -->
+    <param name="fsm/flight_type" value="1"/>           <!-- ★ 飞行模式: 1=手动触发, 2=自动起飞 -->
+    <param name="fsm/thresh_replan_time" value="1.0"/>  <!-- ★ 重规划时间阈值 [s]，超时触发重规划 -->
+    <param name="fsm/thresh_no_replan_meter" value="1.0"/> <!-- ★ 轨迹末端距目标太近时不重规划的距离 [m] -->
+    <param name="fsm/planning_horizon" value="7.5"/>     <!-- ★ 规划视界 [m]，影响轨迹长度 -->
+    <param name="fsm/planning_horizen_time" value="3"/> <!-- ★ 规划视界时间 [s] -->
+    <param name="fsm/emergency_time" value="1.0"/>      <!-- ★ 紧急制动时间 [s]，碰撞风险时触发悬停 -->
+    <param name="fsm/realworld_experiment" value="false"/> <!-- ★ 真机=true / 仿真=false -->
+    <param name="fsm/fail_safe" value="true"/>           <!-- ★ 安全保护：规划失败时自动悬停 -->
+
+    <param name="fsm/waypoint_num" value="1"/>
+    <param name="fsm/waypoint0_x" value="$(arg target_x)"/>
+    <param name="fsm/waypoint0_y" value="$(arg target_y)"/>
+    <param name="fsm/waypoint0_z" value="$(arg target_z)"/>
+
+    <!-- 常调参数：网格地图 -->
+    <param name="grid_map/resolution" value="0.2"/>           <!-- ★ 体素分辨率 [m]，越小越精细但计算量越大 -->
+    <param name="grid_map/map_size_x" value="$(arg map_size_x)"/>
+    <param name="grid_map/map_size_y" value="$(arg map_size_y)"/>
+    <param name="grid_map/map_size_z" value="$(arg map_size_z)"/>
+    <param name="grid_map/local_update_range_x" value="5.5"/> <!-- ★ 局部地图 X 更新范围 [m] -->
+    <param name="grid_map/local_update_range_y" value="5.5"/> <!-- ★ 局部地图 Y 更新范围 [m] -->
+    <param name="grid_map/local_update_range_z" value="4.5"/> <!-- ★ 局部地图 Z 更新范围 [m] -->
+    <param name="grid_map/obstacles_inflation" value="0.5"/>   <!-- ★ 障碍物膨胀半径 [m]，增大更安全但易把自己包进去 -->
+    <param name="grid_map/local_map_margin" value="10"/>       <!-- ★ 局部地图边界余量 [m] -->
+    <param name="grid_map/ground_height" value="-1"/>          <!-- ★ 地面高度 [m]，低于此视为地面 -->
+    <param name="grid_map/frame_id" value="world"/>
+    <param name="grid_map/pose_type" value="2"/>
+    <param name="grid_map/virtual_ceil_height" value="5"/>     <!-- ★ 虚拟天花板高度 [m]，高于此不规划，高空障碍物过滤 -->
+    <param name="grid_map/visualization_truncate_height" value="2"/>
+    <param name="grid_map/show_occ_time" value="false"/>
+
+    <!-- 常调参数：深度滤波 -->
+    <param name="grid_map/use_depth_filter" value="true"/>          <!-- ★ 是否启用深度滤波 -->
+    <param name="grid_map/depth_filter_mindist" value="2.0"/>       <!-- ★ 深度滤波最小距离 [m]，太近的点过滤 -->
+    <param name="grid_map/depth_filter_maxdist" value="10.0"/>       <!-- ★ 深度滤波最大距离 [m]，太远的点过滤 -->
+    <param name="grid_map/depth_filter_tolerance" value="0.5"/>     <!-- ★ 深度容差 [m] -->
+    <param name="grid_map/depth_filter_margin" value="2"/>          <!-- ★ 滤波边缘余量 [像素] -->
+    <param name="grid_map/k_depth_scaling_factor" value="1000.0"/>
+    <param name="grid_map/skip_pixel" value="2"/>                   <!-- ★ 深度图降采样步长，增大减少计算量 -->
+    <param name="grid_map/cx" value="320.5"/>                       <!-- ★ 相机光心 cx [像素]，按实际相机标定 -->
+    <param name="grid_map/cy" value="240.5"/>                       <!-- ★ 相机光心 cy [像素] -->
+    <param name="grid_map/fx" value="554.25"/>                      <!-- ★ 相机焦距 fx [像素] -->
+    <param name="grid_map/fy" value="554.25"/>                      <!-- ★ 相机焦距 fy [像素] -->
+
+    <!-- 常调参数：占据概率 -->
+    <param name="grid_map/p_hit" value="0.80"/>         <!-- ★ 击中概率，增大→观测到障碍物更容易标记占据 -->
+    <param name="grid_map/p_miss" value="0.20"/>        <!-- ★ 漏检概率 -->
+    <param name="grid_map/p_min" value="0.12"/>         <!-- ★ 占据概率下限，低于此视为自由 -->
+    <param name="grid_map/p_max" value="0.90"/>         <!-- ★ 占据概率上限，高于此视为障碍物 -->
+    <param name="grid_map/p_occ" value="0.80"/>         <!-- ★ 占据判定阈值 -->
+    <param name="grid_map/min_ray_length" value="1.5"/> <!-- ★ 射线投射最短距离 [m]，过滤近距离噪声/自扰 -->
+    <param name="grid_map/max_ray_length" value="6.0"/> <!-- ★ 射线投射最长距离 [m]，超过不更新地图 -->
+
+    <!-- 常调参数：规划器运动约束 -->
+    <param name="manager/max_vel" value="8.0"/>               <!-- ★ 最大线速度 [m/s] -->
+    <param name="manager/max_acc" value="5.0"/>               <!-- ★ 最大加速度 [m/s²] -->
+    <param name="manager/max_jerk" value="4"/>                <!-- ★ 最大 jerk [m/s³] -->
+    <param name="manager/control_points_distance" value="1.0"/> <!-- ★ B样条控制点间距 [m] -->
+    <param name="manager/feasibility_tolerance" value="0.05"/>  <!-- ★ 可行性检查容差 -->
+    <param name="manager/planning_horizon" value="7.5"/>        <!-- ★ 规划视界 [m] -->
+    <param name="manager/use_distinctive_trajs" value="true"/>  <!-- ★ 是否生成差异化轨迹簇 -->
+    <param name="manager/drone_id" value="$(arg drone_id)"/>
+
+    <!-- 常调参数：轨迹优化权重 -->
+    <param name="optimization/lambda_smooth" value="1.0"/>      <!-- ★ 平滑代价权重，越大轨迹越平滑 -->
+    <param name="optimization/lambda_collision" value="0.4"/>   <!-- ★ 碰撞代价权重，越大越远离障碍物 -->
+    <param name="optimization/lambda_feasibility" value="0.1"/> <!-- ★ 可行性代价权重 -->
+    <param name="optimization/lambda_fitness" value="1.0"/>     <!-- ★ 目标适应度权重 -->
+    <param name="optimization/dist0" value="0.3"/>              <!-- ★ 碰撞距离阈值 [m] -->
+    <param name="optimization/swarm_clearance" value="0.5"/>    <!-- ★ 集群避碰间距 [m] -->
+    <param name="optimization/max_vel" value="1.5"/>            <!-- ★ 优化阶段最大速度 [m/s] -->
+    <param name="optimization/max_acc" value="1.5"/>            <!-- ★ 优化阶段最大加速度 [m/s²] -->
+
+    <!-- 常调参数：B样条限制 -->
+    <param name="bspline/limit_vel" value="1.5"/>               <!-- ★ B样条速度上限 [m/s] -->
+    <param name="bspline/limit_acc" value="1.5"/>               <!-- ★ B样条加速度上限 [m/s²] -->
+    <param name="bspline/limit_ratio" value="1.1"/>             <!-- ★ 超限比例，1.1=允许超出10% -->
+
+    <!-- 常调参数：动态障碍物预测 -->
+    <param name="prediction/obj_num" value="1"/>                <!-- ★ 预测的动态障碍物数量 -->
+    <param name="prediction/lambda" value="1.0"/>               <!-- ★ 预测代价权重 -->
+    <param name="prediction/predict_rate" value="1.0"/>         <!-- ★ 预测频率 [Hz] -->
+  </node>
+
+  <!-- Traj Server（轨迹跟踪执行） -->
+  <node pkg="ego_planner" name="drone_$(arg drone_id)_traj_server"
+        type="traj_server" output="screen">
+    <remap from="~planning/bspline" to="/drone_$(arg drone_id)_planning/bspline"/>
+    <param name="traj_server/time_forward" value="1.0"/>      <!-- ★ 轨迹前馈时间 [s]，增大=更大提前量 -->
+  </node>
+
+</launch>

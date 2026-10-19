@@ -1,0 +1,26 @@
+# 六机水平起点，单位 m；编号 1..6 对应 typhoon_h480_0..5。
+# 只启用一套，并与仿真实际起点匹配；切换后重启 start_swarm.sh。
+# 配置用于巡逻和里程计桥接，不修改仿真起点；地面高度和坐标轴沿用原方案。
+
+# 航线目录二选一：patrol_maps（原目录）或 patrol_maps_2（本次 rb 起点进场）。
+# start_swarm.sh 自动读取此项，启动命令 base1/base2/base3/routeN 保持不变。
+# 切换起点方案时，同时选择对应目录并启用下方对应的六行起点。
+patrol_maps_dir: patrol_maps_2
+
+# 方案 A：之前起点（robocup_xhyyy.launch，备用；配 patrol_maps）
+# drone_1: {x: 0.0, y: -3.0}
+# drone_2: {x: 0.0, y:  0.0}
+# drone_3: {x: 0.0, y:  3.0}
+# drone_4: {x: -3.0, y: -3.0}
+# drone_5: {x: -3.0, y:  0.0}
+# drone_6: {x: -3.0, y:  3.0}
+
+# 方案 B：rb.launch 起点（当前启用；配 patrol_maps_2）
+# rb 的编号顺序与方案 A 不同，需要整套切换，不能只整体平移 x。
+# rb.launch 的生成高度 z=1；本文件只配置 x/y，不填写 z。
+drone_1: {x: -14.0, y: -3.0}
+drone_2: {x: -14.0, y: 0.0}
+drone_3: {x: -14.0, y: 3.0}
+drone_4: {x: -17.0, y: -3.0}
+drone_5: {x: -17.0, y: 0.0}
+drone_6: {x: -17.0, y: 3.0}

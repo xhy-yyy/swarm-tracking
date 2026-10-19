@@ -1,0 +1,72 @@
+# 第二套起点航线 competition_base1，仅配 XTDrone/robocup/base1.world；起点见 start_positions.yaml。
+# 直接进入最近闭环首点，公共参数继承 patrol_routes.yaml。
+patrol:
+  map: competition_base1
+  defaults:
+    climb_in_place: false
+  routes:
+    # 1 号机：南中 SC，顺时针；直接从西北角入环。
+    drone_1:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: -13.300, y: -1.700}
+        - {x: 43.785, y: -1.700}
+        - {x: 35.287, y: -43.300}
+        - {x: -13.300, y: -43.300}
+    # 2 号机：北中 NC，顺时针；直接从西南角入环。
+    drone_2:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: -13.300, y: 1.700}
+        - {x: -13.300, y: 43.300}
+        - {x: 52.060, y: 43.300}
+        - {x: 43.561, y: 1.700}
+    # 3 号机：北东 NE，顺时针；直接从西南角入环。
+    drone_3:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: 47.031, y: 1.700}
+        - {x: 55.530, y: 43.300}
+        - {x: 113.000, y: 43.300}
+        - {x: 113.000, y: 1.700}
+    # 4 号机：整个南部大矩形，逆时针；直接从西北角入环。
+    # 中街走 y=-0.567，南边走 y=-46.7，与其他巡航闭环不重合、不交叉。
+    # 中街到相邻巡航航段约 1.133m；几何错开仍需六机实飞验证。
+    drone_4:
+      z: 4.2
+      start_delay: 0.0
+      climb_in_place: false
+      entry_waypoints: []
+      waypoints:
+        - {x: -46.700, y: -0.567}
+        - {x: -46.700, y: -46.700}
+        - {x: 118.300, y: -46.700}
+        - {x: 118.300, y: -0.567}
+    # 5 号机：南东 SE，顺时针；直接从西北角入环。
+    drone_5:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: 47.255, y: -1.700}
+        - {x: 113.000, y: -1.700}
+        - {x: 113.000, y: -43.300}
+        - {x: 38.757, y: -43.300}
+    # 6 号机：整个北部大矩形，顺时针；直接从西南角入环。
+    # 中街走 y=0.567，与 4 号及 2/3 号机的巡航航段分别错开。
+    # 中街到相邻巡航航段约 1.133m；几何错开仍需六机实飞验证。
+    drone_6:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: -46.700, y: 0.567}
+        - {x: -46.700, y: 46.700}
+        - {x: 118.300, y: 46.700}
+        - {x: 118.300, y: 0.567}

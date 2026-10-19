@@ -1,0 +1,352 @@
+<launch>
+  <arg name="start_positions_file" default="$(find fly_px4)/config/start_positions.yaml"/>
+  <rosparam file="$(find fly_px4)/config/world_frame.yaml" command="load"/>
+  <!-- 六机巡逻主控；先启动仿真、世界帧桥接/EGO、视觉融合及裁判。
+       map 选择航线预设，公共参数继承 patrol_routes.yaml。
+       mission_complete 仅记录状态，等待裁判结束。 -->
+
+  <arg name="drone_num" default="6"/>
+  <!-- Independent IMU-based recovery; no flight commands or flight-state gating. -->
+  <arg name="gimbal_recovery_enabled" default="true"/>
+  <include if="$(arg gimbal_recovery_enabled)" file="$(find fly_px4)/launch/swarm_gimbal_recovery.launch">
+    <arg name="drone_num" value="$(arg drone_num)"/>
+  </include>
+  <!-- map 是人工选择的预设代号，与官方 world 文件名无关。
+       全部预设继承公共速度/跟踪参数，再加载各自的航线。 -->
+  <arg name="map" default="base0"/>
+  <arg name="routes_file" default="$(eval find('fly_px4') + '/config/patrol_maps/' + arg('map') + '.yaml')"/>
+
+  <!-- 高度指令钳位、软限下压和硬限降落按下方参数执行；修改巡航高度须同步航线 YAML。
+       跟踪高度读取 track_z，各机航线可覆盖。 -->
+  <arg name="min_expl_z"   default="4.1"/>   <!-- 转发 ego 指令时的 z 下钳 -->
+  <arg name="max_expl_z"   default="4.9"/>   <!-- 转发 ego 指令时的 z 上钳 -->
+  <arg name="z_soft_limit" default="5.7"/>
+  <arg name="z_hard_limit" default="6.0"/>
+
+  <!-- 脱困 (与 fly_px4_2 同参数)
+       ego 指令断流(规划失败/节点崩)时的三层兜底, 全程不做任何盲飞平移:
+       悬停 -> 原地自转刷新感知 -> 沿自身航迹回退 -->
+  <arg name="cmd_timeout"       default="2.0"/>
+  <arg name="stuck_yaw_sec"     default="6.0"/>
+  <arg name="stuck_retreat_sec" default="12.0"/>
+  <arg name="retreat_dist"      default="8.0"/>
+  <arg name="frozen_sec"        default="25.0"/>
+  <arg name="spin_rate_deg"     default="30.0"/>
+  <arg name="retreat_hold"      default="8.0"/>
+
+  <!-- 坠机判定: 巡航 4.2m, 掉到 1.5m 以下并持续 5s 只可能是掉下来了 -->
+  <arg name="crash_z"    default="1.5"/>
+  <arg name="crash_hold" default="5.0"/>
+
+  <!-- patrol_collision_check 控制巡逻完整碰撞检查；跟踪始终启用。 -->
+  <arg name="patrol_collision_check" default="true"/>
+
+  <!-- 关联图像视线优先，坐标辅助重捕；yaw/yaw_rate 同步输出并限制角加速度。
+       track_yaw_deadband_deg 控制死区，track_lead_sec 保留 CLI 兼容。 -->
+  <arg name="track_yaw_rate_max"     default="60.0"/>
+  <arg name="track_yaw_acc_max"      default="180.0"/>
+  <arg name="track_yaw_kp"           default="5.0"/>
+  <arg name="track_view_timeout"     default="0.35"/>
+  <arg name="track_view_conf_min"    default="0.4"/>
+  <arg name="track_yaw_stationary_tau" default="0.12"/>
+  <arg name="track_yaw_moving_tau"   default="0.04"/>
+  <arg name="track_yaw_velocity_timeout" default="0.25"/>
+  <!-- 跟踪时机头朝向的死区 -->
+  <arg name="track_yaw_deadband_deg" default="0.0"/>
+  <arg name="track_lead_sec"         default="0.0"/>
+  <arg name="track_stale_sec"        default="0.3"/>
+  <arg name="pose_timeout" default="0.5"/>
+  <arg name="target_state_timeout" default="1.0"/>
+  <arg name="track_measurement_timeout" default="1.0"/>
+  <arg name="target_future_tolerance" default="0.05"/>
+  <!-- 站位点筛选: 距友机的最小间距 (路灯杆等静态障碍交给 ego 雷达地图避) -->
+  <arg name="standoff_peer_clear" default="3.5"/>
+  <!-- mode 回 0 持续这么久才算目标释放(fusion 的 emit_modes 只有 2Hz, 中间会有空档) -->
+  <arg name="track_release_sec"   default="0.5"/>
+  <!-- 站位点移动不超过这个距离就不重发目标, 免得 2Hz 的目标抖动把 ego 轨迹打碎 -->
+  <arg name="goal_move_thresh"    default="1.0"/>
+
+  <!-- 兼容旧启动命令的保留参数，当前 fly_px4_1 不再使用：飞机不会因
+       mission_complete 或 585s 主动降落，而是持续搜索直到裁判结束比赛。 -->
+  <arg name="mission_deadline_sec" default="585.0"/>
+  <arg name="mission_wait_sec"     default="30.0"/>
+
+  <!-- 主控与桥接共用 start_positions.yaml，航点使用地图坐标；该配置不修改仿真起点。 -->
+
+  <!-- 1 号机 (SC 房区) -->
+  <node pkg="fly_px4" type="fly_px4_1" name="fly_px4_1_1" output="screen" clear_params="true">
+    <rosparam file="$(find fly_px4)/config/patrol_routes.yaml" command="load"/>
+    <rosparam file="$(arg routes_file)" command="load"/>
+    <param name="patrol_map" value="$(arg map)"/>
+    <param name="drone_ns"  value="typhoon_h480_0"/>
+    <param name="drone_id"  value="1"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"/>
+    <param name="start_position_key" value="drone_1"/>
+    <param name="min_expl_z"   value="$(arg min_expl_z)"/>
+    <param name="max_expl_z"   value="$(arg max_expl_z)"/>
+    <param name="z_soft_limit" value="$(arg z_soft_limit)"/>
+    <param name="z_hard_limit" value="$(arg z_hard_limit)"/>
+    <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+    <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+    <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+    <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+    <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+    <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+    <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+    <param name="crash_z"    value="$(arg crash_z)"/>
+    <param name="crash_hold" value="$(arg crash_hold)"/>
+    <param name="patrol_collision_check" value="$(arg patrol_collision_check)"/>
+    <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+    <param name="track_yaw_acc_max" value="$(arg track_yaw_acc_max)"/>
+    <param name="track_view_timeout" value="$(arg track_view_timeout)"/>
+    <param name="track_view_conf_min" value="$(arg track_view_conf_min)"/>
+    <param name="track_yaw_stationary_tau" value="$(arg track_yaw_stationary_tau)"/>
+    <param name="track_yaw_moving_tau" value="$(arg track_yaw_moving_tau)"/>
+    <param name="track_yaw_velocity_timeout" value="$(arg track_yaw_velocity_timeout)"/>
+    <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+    <param name="track_yaw_kp"           value="$(arg track_yaw_kp)"/>
+    <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+    <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+    <param name="pose_timeout" value="$(arg pose_timeout)"/>
+    <param name="target_state_timeout" value="$(arg target_state_timeout)"/>
+    <param name="track_measurement_timeout" value="$(arg track_measurement_timeout)"/>
+    <param name="target_future_tolerance" value="$(arg target_future_tolerance)"/>
+    <param name="standoff_peer_clear" value="$(arg standoff_peer_clear)"/>
+    <param name="track_release_sec"   value="$(arg track_release_sec)"/>
+    <param name="goal_move_thresh"    value="$(arg goal_move_thresh)"/>
+    <param name="mission_deadline_sec" value="$(arg mission_deadline_sec)"/>
+    <param name="mission_wait_sec"     value="$(arg mission_wait_sec)"/>
+  </node>
+
+  <!-- 2 号机 (NC 房区) -->
+  <node pkg="fly_px4" type="fly_px4_1" name="fly_px4_1_2" output="screen" clear_params="true">
+    <rosparam file="$(find fly_px4)/config/patrol_routes.yaml" command="load"/>
+    <rosparam file="$(arg routes_file)" command="load"/>
+    <param name="patrol_map" value="$(arg map)"/>
+    <param name="drone_ns"  value="typhoon_h480_1"/>
+    <param name="drone_id"  value="2"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"/>
+    <param name="start_position_key" value="drone_2"/>
+    <param name="min_expl_z"   value="$(arg min_expl_z)"/>
+    <param name="max_expl_z"   value="$(arg max_expl_z)"/>
+    <param name="z_soft_limit" value="$(arg z_soft_limit)"/>
+    <param name="z_hard_limit" value="$(arg z_hard_limit)"/>
+    <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+    <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+    <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+    <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+    <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+    <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+    <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+    <param name="crash_z"    value="$(arg crash_z)"/>
+    <param name="crash_hold" value="$(arg crash_hold)"/>
+    <param name="patrol_collision_check" value="$(arg patrol_collision_check)"/>
+    <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+    <param name="track_yaw_acc_max" value="$(arg track_yaw_acc_max)"/>
+    <param name="track_view_timeout" value="$(arg track_view_timeout)"/>
+    <param name="track_view_conf_min" value="$(arg track_view_conf_min)"/>
+    <param name="track_yaw_stationary_tau" value="$(arg track_yaw_stationary_tau)"/>
+    <param name="track_yaw_moving_tau" value="$(arg track_yaw_moving_tau)"/>
+    <param name="track_yaw_velocity_timeout" value="$(arg track_yaw_velocity_timeout)"/>
+    <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+    <param name="track_yaw_kp"           value="$(arg track_yaw_kp)"/>
+    <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+    <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+    <param name="pose_timeout" value="$(arg pose_timeout)"/>
+    <param name="target_state_timeout" value="$(arg target_state_timeout)"/>
+    <param name="track_measurement_timeout" value="$(arg track_measurement_timeout)"/>
+    <param name="target_future_tolerance" value="$(arg target_future_tolerance)"/>
+    <param name="standoff_peer_clear" value="$(arg standoff_peer_clear)"/>
+    <param name="track_release_sec"   value="$(arg track_release_sec)"/>
+    <param name="goal_move_thresh"    value="$(arg goal_move_thresh)"/>
+    <param name="mission_deadline_sec" value="$(arg mission_deadline_sec)"/>
+    <param name="mission_wait_sec"     value="$(arg mission_wait_sec)"/>
+  </node>
+
+  <!-- 3 号机 (NE 房区) -->
+  <node pkg="fly_px4" type="fly_px4_1" name="fly_px4_1_3" output="screen" clear_params="true">
+    <rosparam file="$(find fly_px4)/config/patrol_routes.yaml" command="load"/>
+    <rosparam file="$(arg routes_file)" command="load"/>
+    <param name="patrol_map" value="$(arg map)"/>
+    <param name="drone_ns"  value="typhoon_h480_2"/>
+    <param name="drone_id"  value="3"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"/>
+    <param name="start_position_key" value="drone_3"/>
+    <param name="min_expl_z"   value="$(arg min_expl_z)"/>
+    <param name="max_expl_z"   value="$(arg max_expl_z)"/>
+    <param name="z_soft_limit" value="$(arg z_soft_limit)"/>
+    <param name="z_hard_limit" value="$(arg z_hard_limit)"/>
+    <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+    <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+    <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+    <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+    <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+    <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+    <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+    <param name="crash_z"    value="$(arg crash_z)"/>
+    <param name="crash_hold" value="$(arg crash_hold)"/>
+    <param name="patrol_collision_check" value="$(arg patrol_collision_check)"/>
+    <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+    <param name="track_yaw_acc_max" value="$(arg track_yaw_acc_max)"/>
+    <param name="track_view_timeout" value="$(arg track_view_timeout)"/>
+    <param name="track_view_conf_min" value="$(arg track_view_conf_min)"/>
+    <param name="track_yaw_stationary_tau" value="$(arg track_yaw_stationary_tau)"/>
+    <param name="track_yaw_moving_tau" value="$(arg track_yaw_moving_tau)"/>
+    <param name="track_yaw_velocity_timeout" value="$(arg track_yaw_velocity_timeout)"/>
+    <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+    <param name="track_yaw_kp"           value="$(arg track_yaw_kp)"/>
+    <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+    <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+    <param name="pose_timeout" value="$(arg pose_timeout)"/>
+    <param name="target_state_timeout" value="$(arg target_state_timeout)"/>
+    <param name="track_measurement_timeout" value="$(arg track_measurement_timeout)"/>
+    <param name="target_future_tolerance" value="$(arg target_future_tolerance)"/>
+    <param name="standoff_peer_clear" value="$(arg standoff_peer_clear)"/>
+    <param name="track_release_sec"   value="$(arg track_release_sec)"/>
+    <param name="goal_move_thresh"    value="$(arg goal_move_thresh)"/>
+    <param name="mission_deadline_sec" value="$(arg mission_deadline_sec)"/>
+    <param name="mission_wait_sec"     value="$(arg mission_wait_sec)"/>
+  </node>
+
+  <!-- 4 号机 (SW 房区) -->
+  <node pkg="fly_px4" type="fly_px4_1" name="fly_px4_1_4" output="screen" clear_params="true">
+    <rosparam file="$(find fly_px4)/config/patrol_routes.yaml" command="load"/>
+    <rosparam file="$(arg routes_file)" command="load"/>
+    <param name="patrol_map" value="$(arg map)"/>
+    <param name="drone_ns"  value="typhoon_h480_3"/>
+    <param name="drone_id"  value="4"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"/>
+    <param name="start_position_key" value="drone_4"/>
+    <param name="min_expl_z"   value="$(arg min_expl_z)"/>
+    <param name="max_expl_z"   value="$(arg max_expl_z)"/>
+    <param name="z_soft_limit" value="$(arg z_soft_limit)"/>
+    <param name="z_hard_limit" value="$(arg z_hard_limit)"/>
+    <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+    <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+    <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+    <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+    <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+    <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+    <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+    <param name="crash_z"    value="$(arg crash_z)"/>
+    <param name="crash_hold" value="$(arg crash_hold)"/>
+    <param name="patrol_collision_check" value="$(arg patrol_collision_check)"/>
+    <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+    <param name="track_yaw_acc_max" value="$(arg track_yaw_acc_max)"/>
+    <param name="track_view_timeout" value="$(arg track_view_timeout)"/>
+    <param name="track_view_conf_min" value="$(arg track_view_conf_min)"/>
+    <param name="track_yaw_stationary_tau" value="$(arg track_yaw_stationary_tau)"/>
+    <param name="track_yaw_moving_tau" value="$(arg track_yaw_moving_tau)"/>
+    <param name="track_yaw_velocity_timeout" value="$(arg track_yaw_velocity_timeout)"/>
+    <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+    <param name="track_yaw_kp"           value="$(arg track_yaw_kp)"/>
+    <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+    <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+    <param name="pose_timeout" value="$(arg pose_timeout)"/>
+    <param name="target_state_timeout" value="$(arg target_state_timeout)"/>
+    <param name="track_measurement_timeout" value="$(arg track_measurement_timeout)"/>
+    <param name="target_future_tolerance" value="$(arg target_future_tolerance)"/>
+    <param name="standoff_peer_clear" value="$(arg standoff_peer_clear)"/>
+    <param name="track_release_sec"   value="$(arg track_release_sec)"/>
+    <param name="goal_move_thresh"    value="$(arg goal_move_thresh)"/>
+    <param name="mission_deadline_sec" value="$(arg mission_deadline_sec)"/>
+    <param name="mission_wait_sec"     value="$(arg mission_wait_sec)"/>
+  </node>
+
+  <!-- 5 号机 (SE 房区) -->
+  <node pkg="fly_px4" type="fly_px4_1" name="fly_px4_1_5" output="screen" clear_params="true">
+    <rosparam file="$(find fly_px4)/config/patrol_routes.yaml" command="load"/>
+    <rosparam file="$(arg routes_file)" command="load"/>
+    <param name="patrol_map" value="$(arg map)"/>
+    <param name="drone_ns"  value="typhoon_h480_4"/>
+    <param name="drone_id"  value="5"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"/>
+    <param name="start_position_key" value="drone_5"/>
+    <param name="min_expl_z"   value="$(arg min_expl_z)"/>
+    <param name="max_expl_z"   value="$(arg max_expl_z)"/>
+    <param name="z_soft_limit" value="$(arg z_soft_limit)"/>
+    <param name="z_hard_limit" value="$(arg z_hard_limit)"/>
+    <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+    <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+    <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+    <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+    <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+    <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+    <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+    <param name="crash_z"    value="$(arg crash_z)"/>
+    <param name="crash_hold" value="$(arg crash_hold)"/>
+    <param name="patrol_collision_check" value="$(arg patrol_collision_check)"/>
+    <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+    <param name="track_yaw_acc_max" value="$(arg track_yaw_acc_max)"/>
+    <param name="track_view_timeout" value="$(arg track_view_timeout)"/>
+    <param name="track_view_conf_min" value="$(arg track_view_conf_min)"/>
+    <param name="track_yaw_stationary_tau" value="$(arg track_yaw_stationary_tau)"/>
+    <param name="track_yaw_moving_tau" value="$(arg track_yaw_moving_tau)"/>
+    <param name="track_yaw_velocity_timeout" value="$(arg track_yaw_velocity_timeout)"/>
+    <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+    <param name="track_yaw_kp"           value="$(arg track_yaw_kp)"/>
+    <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+    <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+    <param name="pose_timeout" value="$(arg pose_timeout)"/>
+    <param name="target_state_timeout" value="$(arg target_state_timeout)"/>
+    <param name="track_measurement_timeout" value="$(arg track_measurement_timeout)"/>
+    <param name="target_future_tolerance" value="$(arg target_future_tolerance)"/>
+    <param name="standoff_peer_clear" value="$(arg standoff_peer_clear)"/>
+    <param name="track_release_sec"   value="$(arg track_release_sec)"/>
+    <param name="goal_move_thresh"    value="$(arg goal_move_thresh)"/>
+    <param name="mission_deadline_sec" value="$(arg mission_deadline_sec)"/>
+    <param name="mission_wait_sec"     value="$(arg mission_wait_sec)"/>
+  </node>
+
+  <!-- 6 号机 (NW 房区) -->
+  <node pkg="fly_px4" type="fly_px4_1" name="fly_px4_1_6" output="screen" clear_params="true">
+    <rosparam file="$(find fly_px4)/config/patrol_routes.yaml" command="load"/>
+    <rosparam file="$(arg routes_file)" command="load"/>
+    <param name="patrol_map" value="$(arg map)"/>
+    <param name="drone_ns"  value="typhoon_h480_5"/>
+    <param name="drone_id"  value="6"/>
+    <param name="drone_num" value="$(arg drone_num)"/>
+    <rosparam file="$(arg start_positions_file)" ns="start_positions" command="load"/>
+    <param name="start_position_key" value="drone_6"/>
+    <param name="min_expl_z"   value="$(arg min_expl_z)"/>
+    <param name="max_expl_z"   value="$(arg max_expl_z)"/>
+    <param name="z_soft_limit" value="$(arg z_soft_limit)"/>
+    <param name="z_hard_limit" value="$(arg z_hard_limit)"/>
+    <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+    <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+    <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+    <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+    <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+    <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+    <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+    <param name="crash_z"    value="$(arg crash_z)"/>
+    <param name="crash_hold" value="$(arg crash_hold)"/>
+    <param name="patrol_collision_check" value="$(arg patrol_collision_check)"/>
+    <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+    <param name="track_yaw_acc_max" value="$(arg track_yaw_acc_max)"/>
+    <param name="track_view_timeout" value="$(arg track_view_timeout)"/>
+    <param name="track_view_conf_min" value="$(arg track_view_conf_min)"/>
+    <param name="track_yaw_stationary_tau" value="$(arg track_yaw_stationary_tau)"/>
+    <param name="track_yaw_moving_tau" value="$(arg track_yaw_moving_tau)"/>
+    <param name="track_yaw_velocity_timeout" value="$(arg track_yaw_velocity_timeout)"/>
+    <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+    <param name="track_yaw_kp"           value="$(arg track_yaw_kp)"/>
+    <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+    <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+    <param name="pose_timeout" value="$(arg pose_timeout)"/>
+    <param name="target_state_timeout" value="$(arg target_state_timeout)"/>
+    <param name="track_measurement_timeout" value="$(arg track_measurement_timeout)"/>
+    <param name="target_future_tolerance" value="$(arg target_future_tolerance)"/>
+    <param name="standoff_peer_clear" value="$(arg standoff_peer_clear)"/>
+    <param name="track_release_sec"   value="$(arg track_release_sec)"/>
+    <param name="goal_move_thresh"    value="$(arg goal_move_thresh)"/>
+    <param name="mission_deadline_sec" value="$(arg mission_deadline_sec)"/>
+    <param name="mission_wait_sec"     value="$(arg mission_wait_sec)"/>
+  </node>
+
+</launch>

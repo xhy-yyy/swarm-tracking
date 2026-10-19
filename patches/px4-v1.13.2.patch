@@ -1,0 +1,56 @@
+diff --git a/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink b/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink
+index 88aa1fe722..f7eeccd4f9 100644
+--- a/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink
++++ b/ROMFS/px4fmu_common/init.d-posix/px4-rc.mavlink
+@@ -1,9 +1,9 @@
+ #!/bin/sh
+ # shellcheck disable=SC2154
+ 
+-udp_offboard_port_local=$((14580+px4_instance))
+-udp_offboard_port_remote=$((14540+px4_instance))
+-[ $px4_instance -gt 9 ] && udp_offboard_port_remote=14549 # use the same ports for more than 10 instances to avoid port overlaps
++udp_offboard_port_local=$((34580+px4_instance))
++udp_offboard_port_remote=$((24540+px4_instance))
++#[ $px4_instance -gt 9 ] && udp_offboard_port_remote=14549 # use the same ports for more than 10 instances to avoid port overlaps
+ udp_onboard_payload_port_local=$((14280+px4_instance))
+ udp_onboard_payload_port_remote=$((14030+px4_instance))
+ udp_onboard_gimbal_port_local=$((13030+px4_instance))
+diff --git a/ROMFS/px4fmu_common/init.d-posix/rcS b/ROMFS/px4fmu_common/init.d-posix/rcS
+index 206d2654d4..fc7a01aca3 100644
+--- a/ROMFS/px4fmu_common/init.d-posix/rcS
++++ b/ROMFS/px4fmu_common/init.d-posix/rcS
+@@ -121,6 +121,20 @@ then
+ 
+ 	param set SENS_BOARD_X_OFF 0.000001
+ 	param set SENS_DPRES_OFF 0.001
++
++	##############
++	## XTDrone  ##
++	##############
++
++	# GPS used
++	param set EKF2_AID_MASK 1
++	# Vision used and GPS denied
++	#param set EKF2_AID_MASK 24
++
++	# Barometer used for hight measurement
++	param set EKF2_HGT_MODE 0
++	# Barometer denied and vision used for hight measurement
++	#param set EKF2_HGT_MODE 3
+ fi
+ 
+ param set-default BAT1_N_CELLS 4
+diff --git a/Tools/setup_gazebo.bash b/Tools/setup_gazebo.bash
+index f11cc26218..7aa616d522 100755
+--- a/Tools/setup_gazebo.bash
++++ b/Tools/setup_gazebo.bash
+@@ -20,6 +20,6 @@ export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:${BUILD_DIR}/build_gazebo
+ export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:${SRC_DIR}/Tools/sitl_gazebo/models
+ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BUILD_DIR}/build_gazebo
+ 
+-echo -e "GAZEBO_PLUGIN_PATH $GAZEBO_PLUGIN_PATH"
+-echo -e "GAZEBO_MODEL_PATH $GAZEBO_MODEL_PATH"
+-echo -e "LD_LIBRARY_PATH $LD_LIBRARY_PATH"
++#echo -e "GAZEBO_PLUGIN_PATH $GAZEBO_PLUGIN_PATH"
++#echo -e "GAZEBO_MODEL_PATH $GAZEBO_MODEL_PATH"
++#echo -e "LD_LIBRARY_PATH $LD_LIBRARY_PATH"

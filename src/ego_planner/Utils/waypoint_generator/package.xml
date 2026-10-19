@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <version>0.0.0</version>
+  <name>waypoint_generator</name>
+  <description>
+     waypoint_generator
+  </description>
+  <maintainer email="eeshaojie@todo.todo">Shaojie Shen</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/waypoint_generator</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>tf</depend>
+  <depend>nav_msgs</depend>
+</package>

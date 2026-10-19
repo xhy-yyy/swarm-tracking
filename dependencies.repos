@@ -1,0 +1,5 @@
+repositories:
+  PX4-Autopilot:
+    type: git
+    url: https://github.com/PX4/PX4-Autopilot.git
+    version: 46a12a09bf11c8cbafc5ad905996645b4fe1a9df

@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>fly_px4</name>
+  <version>0.1.0</version>
+  <description>Six-UAV visual search, cooperative target tracking and PX4 control.</description>
+  <maintainer email="xhy-yyy@users.noreply.github.com">xhy</maintainer>
+  <license>BSD-3-Clause</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>ros_actor_cmd_pose_plugin_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-shapely</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <export>
+  </export>
+  <depend>geometry_msgs</depend>
+  <depend>mavros_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>quadrotor_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>track_msgs</depend>
+  <depend>traj_utils</depend>
+  <author>lxlink (original fly_px4 package)</author>
+  <exec_depend>python3-rospkg</exec_depend>
+  <exec_depend>ego_planner</exec_depend>
+  <exec_depend>swarm_simulation</exec_depend>
+  <exec_depend>gazebo_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+</package>

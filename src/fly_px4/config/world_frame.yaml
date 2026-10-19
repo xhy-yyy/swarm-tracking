@@ -1,0 +1,4 @@
+# 本地 GPS 插件半径 6353000m，PX4 投影半径 6371000m；先缩放本地 XY 再加起点。
+# 若仿真 GPS 插件也使用 6371000m，local_xy_scale 应设为 1.0。
+swarm_coordinates:
+  local_xy_scale: 0.9971746978496311   # 6353000 / 6371000

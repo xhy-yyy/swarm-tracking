@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-19",
+  "workspace_commit": "5fc179fcdca65c60b611f8783b8c351cf2871193",
+  "px4": {
+    "url": "https://github.com/PX4/PX4-Autopilot.git",
+    "commit": "46a12a09bf11c8cbafc5ad905996645b4fe1a9df"
+  },
+  "sitl_gazebo": {
+    "url": "https://github.com/PX4/PX4-SITL_gazebo.git",
+    "commit": "48440d7b5c78a21182415266334981f1163f4b2c"
+  },
+  "xtdrone": {
+    "url": "https://gitee.com/robin_shaun/XTDrone.git",
+    "commit": "eac5093dbd9a635fbe37f6a29ffed8bad96ffe45"
+  },
+  "excluded": [
+    "src/ego_planner/Utils/multi_map_server.zip",
+    "src/ego_planner/Utils/multi_map_server/src/multi_map_server/msg/_MultiOccupancyGrid.py",
+    "src/ego_planner/Utils/multi_map_server/src/multi_map_server/msg/_MultiSparseMap3D.py",
+    "src/ego_planner/Utils/multi_map_server/src/multi_map_server/msg/_SparseMap3D.py",
+    "src/ego_planner/Utils/multi_map_server/src/multi_map_server/msg/_VerticalOccupancyGridList.py",
+    "src/ego_planner/Utils/multi_map_server/src/multi_map_server/msg/__init__.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_AuxCommand.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_Corrections.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_Gains.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_OutputData.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_PPROutputData.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_PositionCommand.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_SO3Command.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_Serial.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_StatusData.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/_TRPYCommand.py",
+    "src/ego_planner/Utils/quadrotor_msgs/src/quadrotor_msgs/msg/__init__.py",
+    "src/fly_px4/scripts/best_11s_new.pt",
+    "src/fly_px4/scripts/robocupV5.pt",
+    "src/fly_px4/test/restore_stereo_sensor.sh",
+    "src/fly_px4/test/run_camera_imu_reference_smoke.sh"
+  ]
+}

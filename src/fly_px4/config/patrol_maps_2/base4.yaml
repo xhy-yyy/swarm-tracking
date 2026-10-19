@@ -1,0 +1,67 @@
+# 第二套起点航线 base4，仅配 ~/world/base4.world；起点见 start_positions.yaml。
+# 直接进入最近闭环首点，公共参数继承 patrol_routes.yaml。
+patrol:
+  map: base4
+  defaults:
+    climb_in_place: false
+  routes:
+    # 1 号机：南中 SC，顺时针；直接进入最近的巡航航点。
+    drone_1:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x:  -13.500, y:   -1.500}
+        - {x:   60.000, y:   -1.500}
+        - {x:   60.000, y:  -43.500}
+        - {x:  -13.500, y:  -43.500}
+    # 2 号机：北中 NC，顺时针；直接进入最近的巡航航点。
+    drone_2:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x:  -13.500, y:    1.500}
+        - {x:  -13.500, y:   43.500}
+        - {x:   58.500, y:   43.500}
+        - {x:   58.500, y:    1.500}
+    # 3 号机：北东 NE，顺时针；直接进入最近的巡航航点。
+    drone_3:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x:   61.500, y:    1.500}
+        - {x:   61.500, y:   43.500}
+        - {x:  113.000, y:   43.500}
+        - {x:  113.000, y:    1.500}
+    # 4 号机：整个南部大矩形，逆时针；直接进入最近的巡航航点。
+    drone_4:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x:  -46.700, y:   -0.567}
+        - {x:  -46.700, y:  -46.700}
+        - {x:  118.300, y:  -46.700}
+        - {x:  118.300, y:   -0.567}
+    # 5 号机：南东 SE，顺时针；直接进入最近的巡航航点。
+    drone_5:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x:   63.000, y:   -1.500}
+        - {x:  113.000, y:   -1.500}
+        - {x:  113.000, y:  -43.500}
+        - {x:   63.000, y:  -43.500}
+    # 6 号机：整个北部大矩形，顺时针；直接进入最近的巡航航点。
+    drone_6:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x:  -46.700, y:    0.567}
+        - {x:  -46.700, y:   46.700}
+        - {x:  118.300, y:   46.700}
+        - {x:  118.300, y:    0.567}

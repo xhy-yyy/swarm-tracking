@@ -1,0 +1,184 @@
+
+patrol:
+
+  # 默认值 (每条航线/每个航点都可覆盖)
+  defaults:
+    # 速度: 发给 ego 的 /ego_speed_N = [max_vel, max_acc]
+    cruise_speed: 12.0          # 巡逻直线段 m/s (需求)
+    cruise_accel: 7.0           # 刹车距离 v^2/2a = 9 m
+    entry_speed: 10.0           # 起飞后进场 m/s
+    entry_accel: 7.0           # 起飞后进场加速度 m/s²
+    return_speed: 8.0          # 跟踪结束归航 m/s
+    return_accel: 5.0          # 跟踪结束归航加速度 m/s²
+    
+    track_speed_far: 8.0        # 目标 > track_far_dist 时快速接近 (固定)
+    track_acc_far: 5.0          # 曾 5.0: 水平加速 5m/s² -> 姿态 27°, 逼近段行人出
+                                # 画面 -> 检测断流 -> 15s 清零。
+                                # 2.5 -> 14°, 4.0 -> 22° (云台把相机世界稳定, 机体
+                                # 俯仰不直接改光轴; 下倾 20° 的余量见 sdf 安装角注释)
+    track_speed_near: 6.0       # mid 段接近速度 (距站位 > track_follow_gap)
+    track_acc_near: 4.0
+    track_speed_creep: 2.0      # creep 段接近速度
+    track_acc_creep: 1.0
+    track_follow_margin: 0.35   # 跟随段限速 = 行人速度 + 此余量
+    track_follow_floor: 1.0     # 跟随段限速下限 (行人停下时不爬行)
+    track_follow_gap: 3.0       # 接近段/跟随段分界: 距站位超过此余量全速接近
+    track_cap_slew_up: 2.0      # 限速升速斜率 (m/s²): 接近提速要快
+    track_cap_slew_down: 0.6    # 限速降速斜率 (m/s²): 慢降 2~3s 斜坡, 不急刹
+    track_acc_soft: 0.8         # 降速时发给 ego 的加速度上限 (缓降轨迹)
+    track_near_dist: 20.0       # far -> mid 的距离
+    track_far_dist: 30.0        # mid -> far 的距离 (滞回防抖)
+    track_creep_in: 9.0         # mid -> creep 的距离
+    track_creep_out: 11.0       # creep -> mid 的距离 (滞回防抖)
+    track_far_goal_dist: 22.0   # far 档发给 EGO 的引导点: 本机->站位连线上这么远 (0=关闭)
+                                # 须 < EGO planning_horizon(25m), 否则远距目标每 0.3s
+                                # 重发会把 8m/s 拖到 ~3.3m/s; 单目沿视线跳变也不再移动它
+    
+
+
+    track_z: 3.24               # 相机下移 4cm，跟踪高度提高 4cm，补偿零姿态光心高度
+
+
+
+    
+    standoff_radius: 5.5
+    standoff_lead_sec: 0.0
+    standoff_lead_max: 1.5    # 前推距离上限(m): 前推已关, 保留作保险
+    standoff_lead_tau: 0.3    # 行人速度低通时间常数(s): 速度环前馈项也用它, 调大更稳更滞后
+    standoff_retreat_dist: 4.0
+    standoff_move_thresh: 0.25  # 高频更新: 间隔>=0.3s 且移动>0.25m 就重发
+    standoff_min_interval: 0.3  # (人静止时目标点不动, 不重发, 飞机悬停盯人)
+    standoff_force_dist: 2.5    # 被行人甩开超过这个值立即重发
+
+    
+
+    track_vel_loop_enable: true
+    track_vel_loop_kp: 0.5        # 位置误差 -> 速度 (1/s)
+    track_vel_loop_ki: 0.0       # 积分 (消稳态差; 有抗饱和钳位)
+    track_vel_loop_kd: 0.1       # 微分 (抑制超调)
+    track_vel_loop_err_tau: 0.1  # 误差一阶低通时间常数 (s) —— 去抖核心; 晃就再调大。
+                                 # !! 0.0 = 关闭低通, 等于对 50Hz 原始误差做 D 微分
+                                 # (与代码"对低通后误差差分"的约定相反), 会放大噪声
+    # 目标速度前馈死区，单位 m/s；抑制静止噪声，设为 0 关闭。
+    track_vel_loop_ff_dead: 0.35
+    track_vel_loop_acc_max: 2.5   # 指令加速度斜率限幅 (m/s²) —— 去抖核心
+    track_vel_loop_vmax: 3.0      # 速度指令幅值上限 (须 > 行人最高速 2.0)
+    track_vel_loop_enter_dist: 9.0
+    track_vel_loop_exit_dist: 12.0
+    track_vel_loop_enter_err: 3.5
+    track_vel_loop_exit_err: 5.0
+    track_vel_loop_lookahead: 2.5 # 方向采样前视距离基线 (m)
+    track_vel_loop_clear: 0.55    # 前视走廊半宽 (m, 含机身半径余量)
+    track_vel_loop_samples: 7     # 每侧采样数 (20° 步进 -> ±105°)
+    track_vel_loop_w_turn: 0.4    # 偏离当前速度方向的惩罚权重 (防左右横跳)
+   
+
+
+
+    track_avoid_enable: true
+    track_avoid_d_hard: 1.0       # 预测路径离任意表面的硬下限 (m, 原始墙面, 非膨胀)
+    track_avoid_d_safe: 2.5       # 期望离墙净空 (m), 低于它才开始介入
+    track_avoid_lag: 0.2          # 执行滞后 (s): PX4 速度环 + 指令低通
+    track_avoid_horizon: 1.2      # 到达新速度后再前视 (s) —— 2m/s 时约提前 4~5m 判风险
+    track_avoid_brake_acc: 2.0    # 制动尾段减速度 (m/s²)
+    track_avoid_memory_sec: 3.0   # 雷达表面记忆 (s): 拐过楼角后仍记得刚经过的墙
+    track_avoid_overhead_lidar_sec: 15.0  # 雷达这么久内扫到过的格不算屋檐/顶棚 (= body_band memory_sec)
+    track_avoid_block_sec: 0.6    # 持续找不到前进方向多久交 EGO (s)
+    track_avoid_holdoff_sec: 1.5  # 交 EGO 后多久内不抢回 (s), 5s 内反复被堵逐次加倍到 3 倍
+    standoff_wall_clear: 2.8      # 站位点离墙 (m), 略大于 d_safe, 到位悬停时不触发速度过滤
+    standoff_los_clear: 0.35      # 站位->行人视线离墙 (m), 穿墙时 ~0
+    # 首选附近没有常规站位时启用走廊档，要求 corridor_clear 并靠近通道中线。
+    # 速度守卫同步降低期望净空，仍保留硬净空与同侧约束。
+    standoff_corridor_enable: true
+    standoff_corridor_clear: 1.6  # 走廊档站位离墙下限 (m), 实际取 max(此值, d_hard+0.3)
+    standoff_cross_radius: 3.5    # 直飞到站位离行人比这近 = 要从人身边穿过去 (m)
+
+    
+
+    
+    track_stuck_sec: 4.0
+
+    z: 4.2                      # 巡航高度 (被 fly_px4_1 钳在 [min_expl_z, max_expl_z])
+
+    arrive_radius: 1.5          # 巡航距航点小于此值时保持位置，转向对准后再飞下一段
+    goal_repub_period: 2.0      # 只在"收不到 ego 指令"时才按这个周期重发目标
+    loop: true                  # 跑完一圈回到第一个航点 (无限循环)
+    start_delay: 0.0
+
+    # 机头: course = 沿航线方向(用 ego traj_server 给的 cmd.yaw)
+    #       course_offset = 沿航线方向 + yaw_offset_deg
+    #       fixed = 固定 yaw_deg
+    yaw_mode: course
+    yaw_offset_deg: 0.0
+    # 移动中的巡逻偏航限速；降低可减少转向丢帧，但机头跟随更慢。
+    patrol_yaw_rate_max: 135.0
+
+  # 六条航线
+  # 各机 z 统一 4.2: plane_mode 下轨迹 z 恒等于 relay 的 plane_z=4.5, 高度棋盘在
+  # 规划层面无意义; 六机同高靠 swarm 轨迹的互相避让保证间隔。
+  routes:
+
+    # 1 号机: SC 房区 (南中). 东 -> 南 -> 西 -> 北
+    drone_1:
+      z: 4.2
+      start_delay: 0.0
+      waypoints:
+        - {x: -13.5, y:  -1.5}  # 主街南车道, 房区西北角
+        - {x:  43.5, y:  -1.5}  # 到 x=45 路口
+        - {x:  43.5, y: -43.5}  # 南下到 y=-45 路
+        - {x: -13.5, y: -43.5}  # 西行回 x=-15 路
+
+    # 2 号机: NC 房区 (北中). 北 -> 东 -> 南 -> 西 (顺时针)
+    drone_2:
+      z: 4.2
+      start_delay: 0.0
+      waypoints:
+        - {x: -13.5, y:   1.5}
+        - {x: -13.5, y:  43.5}
+        - {x:  43.5, y:  43.5}
+        - {x:  43.5, y:   1.5}
+
+    # 3 号机: NE 房区 (北东), 东边取 x=120 覆盖东端. 北 -> 东 -> 南 -> 西 (顺时针)
+    drone_3:
+      z: 4.2
+      start_delay: 0.0
+      waypoints:
+        - {x:  46.5, y:   1.5}
+        - {x:  46.5, y:  43.5}
+        - {x: 113, y:  43.5}
+        - {x: 113, y:   1.5}
+
+    # 4 号机: SW 房区 (南西)，逆时针（西 -> 南 -> 东 -> 北）
+    drone_4:
+      z: 4.2
+      start_delay: 0.0
+      # 与 base0 预设同步：先远离 (-3,-3.7) 灯杆，再从主街进入西侧道路。
+      entry_waypoints:
+        - {x:  -6.0, y: -0.8}
+        - {x: -16.5, y: -1.5}
+      waypoints:
+        - {x: -16.5, y:  -1.5}
+        - {x: -43.5, y:  -1.5}
+        - {x: -43.5, y: -43.5}
+        - {x: -16.5, y: -43.5}
+        
+
+    # 5 号机: SE 房区 (南东), 东边取 x=120
+    drone_5:
+      z: 4.2
+      start_delay: 0.0
+      waypoints:
+        - {x:  46.5, y:  -1.5}
+        - {x: 113, y:  -1.5}
+        - {x: 113, y: -43.5}
+        - {x:  46.5, y: -43.5}
+
+    # 6 号机: NW 房区 (北西). 北 -> 东 -> 南 -> 西 (顺时针)
+    drone_6:
+      z: 4.2
+      start_delay: 0.0
+      waypoints:
+        - {x: -43.5, y:   1.5}
+        - {x: -43.5, y:  43.5}
+        - {x: -16.5, y:  43.5}
+        - {x: -16.5, y:   1.5}

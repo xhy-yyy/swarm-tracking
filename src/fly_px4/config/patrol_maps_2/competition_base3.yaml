@@ -1,0 +1,74 @@
+# 第二套起点航线 competition_base3，仅配 XTDrone/robocup/base3.world；起点见 start_positions.yaml。
+# 直接进入最近闭环首点，公共参数继承 patrol_routes.yaml。
+patrol:
+  map: competition_base3
+  defaults:
+    climb_in_place: false
+  routes:
+    # 1 号机：南中 SC，顺时针；直接从西北角入环。
+    drone_1:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: -13.300, y: -1.700}
+        - {x: 28.300, y: -1.700}
+        - {x: 28.300, y: -43.300}
+        - {x: -13.300, y: -43.300}
+    # 2 号机：北中 NC，顺时针；直接从西南角入环。
+    drone_2:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: -13.300, y: 1.700}
+        - {x: -13.300, y: 43.300}
+        - {x: 28.800, y: 43.300}
+        - {x: 28.800, y: 1.700}
+    # 3 号机：北东 NE，顺时针；直接从西南角入环。
+    # 东侧取 x=116.7，移到 x=120 外侧道路；与 6 号东侧航段横向相隔 1.6m。
+    drone_3:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: 32.200, y: 1.700}
+        - {x: 32.200, y: 43.300}
+        - {x: 116.700, y: 43.300}
+        - {x: 116.700, y: 1.700}
+    # 4 号机：整个南部大矩形，逆时针；直接从西北角入环。
+    # 中街走 y=-0.567，南边走 y=-46.7，与其他巡航闭环不重合、不交叉。
+    # 中街到相邻巡航航段约 1.133m；几何错开仍需六机实飞验证。
+    drone_4:
+      z: 4.2
+      start_delay: 0.0
+      climb_in_place: false
+      entry_waypoints: []
+      waypoints:
+        - {x: -46.700, y: -0.567}
+        - {x: -46.700, y: -46.700}
+        - {x: 118.300, y: -46.700}
+        - {x: 118.300, y: -0.567}
+    # 5 号机：南东 SE，顺时针；直接从西北角入环。
+    # 东侧取 x=116.7，移到 x=120 外侧道路；与 4 号东侧航段横向相隔 1.6m。
+    drone_5:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: 31.700, y: -1.700}
+        - {x: 116.700, y: -1.700}
+        - {x: 116.700, y: -43.300}
+        - {x: 31.700, y: -43.300}
+    # 6 号机：整个北部大矩形，顺时针；直接从西南角入环。
+    # 中街走 y=0.567，与 4 号及 2/3 号机的巡航航段分别错开。
+    # 中街到相邻巡航航段约 1.133m；几何错开仍需六机实飞验证。
+    drone_6:
+      z: 4.2
+      start_delay: 0.0
+      entry_waypoints: []
+      waypoints:
+        - {x: -46.700, y: 0.567}
+        - {x: -46.700, y: 46.700}
+        - {x: 118.300, y: 46.700}
+        - {x: 118.300, y: 0.567}

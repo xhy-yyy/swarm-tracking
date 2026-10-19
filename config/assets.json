@@ -1,0 +1,861 @@
+{
+  "schema": 1,
+  "files": {
+    "assets/weights/best_11s_new.pt": {
+      "sha256": "e35a79914ea77dceb60c492d5e0a2b69c5159267545751b177a9d6d1002c95cd",
+      "bytes": 19187994
+    },
+    "assets/models/House/House.sdf": {
+      "sha256": "a341dae1f19ece377364197e27c6d35b5c8e775eb1c96c1534b1664a93b3f220",
+      "bytes": 1163
+    },
+    "assets/models/House/meshes/indoor1.dae": {
+      "sha256": "c47cc4208eae2895df6a94f360d65f68f3ced36f3f8005660fd78c745e70e548",
+      "bytes": 1702850
+    },
+    "assets/models/House/meshes/indoor2.dae": {
+      "sha256": "ddb4accddd156f11aaa3c9e6b0a36c3068d956de4e091c187a82610c8692a554",
+      "bytes": 1720089
+    },
+    "assets/models/House/meshes/indoor3.dae": {
+      "sha256": "b668eeadaca67310fab821908cdcab0b6c01c7cf52d84b16bf285c95eafabbed",
+      "bytes": 1693220
+    },
+    "assets/models/House/model.config": {
+      "sha256": "a98a89e08519fb8c35509c0cbef945db0f62aed2c5e55f5d610c8406e12af25c",
+      "bytes": 285
+    },
+    "assets/models/cardboard_box/materials/textures/cardboard_box.png": {
+      "sha256": "b58d89413faef28df1efe51c72ca52ced517dc445fca350514311613b47a6ce6",
+      "bytes": 368145
+    },
+    "assets/models/cardboard_box/meshes/cardboard_box.dae": {
+      "sha256": "abb3c56caec5879f1d862e405a26e32a6f14edbb922f93b3445517e33174b8c8",
+      "bytes": 9399
+    },
+    "assets/models/cardboard_box/model.config": {
+      "sha256": "65d9536b5a96a4fc700b54efdc46d74339a929660bfc17bad43b835167328120",
+      "bytes": 345
+    },
+    "assets/models/cardboard_box/model.sdf": {
+      "sha256": "e3e198104789021ae98cae8acb5570042cb50159153651be5511eb7ba6f36c50",
+      "bytes": 1265
+    },
+    "assets/models/casual_female/materials/textures/brown_eye.png": {
+      "sha256": "4659691c7295ad6206c78b003e5fd0e5f91dcd53032fa914a229bb48cabe424b",
+      "bytes": 610817
+    },
+    "assets/models/casual_female/materials/textures/casual_female.png": {
+      "sha256": "75bce8773b7fbaca854d4f7e3f6b7bef20dbbc38b027e529e026c675d619531e",
+      "bytes": 279501
+    },
+    "assets/models/casual_female/materials/textures/eyebrow002.png": {
+      "sha256": "1de4e4cb69b3f4324390219ffbeb17a0b2555104d3211d1ac667655b69b64038",
+      "bytes": 96277
+    },
+    "assets/models/casual_female/materials/textures/eyelashes01.png": {
+      "sha256": "4b69c0fff2648874460e9caf80c31413c444218a5c50afebc425aeaa65484a35",
+      "bytes": 91600
+    },
+    "assets/models/casual_female/materials/textures/female_casualsuit01_diffuse.png": {
+      "sha256": "414d46afa55fba09ad0913484d57df2ba6b597dc8193595a13a12436137dc21b",
+      "bytes": 3019656
+    },
+    "assets/models/casual_female/materials/textures/female_casualsuit01_normal.png": {
+      "sha256": "7bff7afbbc3f068e06f69abcddc8c2c9ce667ec181e0f2a918f8af78eba12610",
+      "bytes": 5744103
+    },
+    "assets/models/casual_female/materials/textures/female_casualsuit02_diffuse.png": {
+      "sha256": "23bd3c8e4df3993fe3bdb849daba7a4dd0476f3a28fd8402cd28abbb26666f49",
+      "bytes": 4340869
+    },
+    "assets/models/casual_female/materials/textures/female_casualsuit02_normal.png": {
+      "sha256": "37143dabd78647ca37689f0b65d969c958a962d728dffd94e60c9beacf76a3df",
+      "bytes": 1646961
+    },
+    "assets/models/casual_female/materials/textures/ponytail01_diffuse.png": {
+      "sha256": "dcb364300cac06ce8bef91b2f7c0970baf310898bbdd06b0c6b884ee9306eb97",
+      "bytes": 3910782
+    },
+    "assets/models/casual_female/materials/textures/shoes05_diffuse.png": {
+      "sha256": "7fe5ea2600f6578cdf017da3392ae13aedabea8e8cc1dd6302a8f57e8fb7e5af",
+      "bytes": 1291907
+    },
+    "assets/models/casual_female/materials/textures/tongue01_diffuse.png": {
+      "sha256": "3150be398e48e8ba1feac164c3143c16c0b2e959d9ffb6155f0171f59cfb4ea9",
+      "bytes": 625419
+    },
+    "assets/models/casual_female/materials/textures/young_lightskinned_female_diffuse.png": {
+      "sha256": "b2a6ac8cd4f9febdb447368e29c76cd68410bb66e46d9dcfa2d5f75126eea8fc",
+      "bytes": 4391156
+    },
+    "assets/models/casual_female/meshes/casual_female.dae": {
+      "sha256": "d784050bc51f3e94d76705462851076a1fcac6e6f39a1a02eedb9c6c1b603536",
+      "bytes": 3887837
+    },
+    "assets/models/casual_female/model.config": {
+      "sha256": "19d1bdb5e4a769c9dc48c21ffe9dd5c9c4cb20a198afabe229c2475f2ac9b771",
+      "bytes": 351
+    },
+    "assets/models/casual_female/model.sdf": {
+      "sha256": "5fdd1984c940236165162a3ed40048678888b5dd1d687767d3d86889be818065",
+      "bytes": 576
+    },
+    "assets/models/casual_female/thumbnails/1.png": {
+      "sha256": "2a2934422ead27a15934b65889e14099227495e2cda913bb3c4727f3875e8bf9",
+      "bytes": 32224
+    },
+    "assets/models/casual_female/thumbnails/2.png": {
+      "sha256": "5fe50285923d76b97bb767e3bde5d3cd5b5e115a32a8651696dc6eb68642a627",
+      "bytes": 20889
+    },
+    "assets/models/casual_female/thumbnails/3.png": {
+      "sha256": "f725a9ace69ba680d8e92c7967fe4ff866cebe62a4e46e5766e5359a4c5bc9c0",
+      "bytes": 40431
+    },
+    "assets/models/casual_female/thumbnails/4.png": {
+      "sha256": "5cb8edc4c74c64fe13a08db35cade3d41ebff088e1bf574409f9249af6b113d3",
+      "bytes": 44397
+    },
+    "assets/models/casual_female/thumbnails/5.png": {
+      "sha256": "0056e9d4c16716c1e98a4bc75ac09469de1b122b934a98507835b6bacdd5a572",
+      "bytes": 41591
+    },
+    "assets/models/cessna/meshes/body.dae": {
+      "sha256": "445a159fc147b7d7e1baaada6ec805a8ab3ab5a0dbd6eb6022ba07f48d25e05e",
+      "bytes": 784969
+    },
+    "assets/models/cessna/meshes/cessna_front_wheel.dae": {
+      "sha256": "28e105a3f299726b256e2c28f57d9e72e97077bb0c521ba2a25a25821d1371c3",
+      "bytes": 17592
+    },
+    "assets/models/cessna/meshes/cessna_prop.dae": {
+      "sha256": "1b574d1ab7f811f9905d7f7647ed8d12976390b0f1d83d8639abe49e6e933bbb",
+      "bytes": 43213
+    },
+    "assets/models/cessna/meshes/cessna_rear_left_wheel.dae": {
+      "sha256": "f11ec4299d97fe20fc5432271d263c11b00fa2e4fc14ee423843facf52e9712e",
+      "bytes": 18455
+    },
+    "assets/models/cessna/meshes/cessna_rear_right_wheel.dae": {
+      "sha256": "c9f9edb48fe50f1536c1f98dd5aa50dd93698373441dd4374f581b1b70fdaa6a",
+      "bytes": 18447
+    },
+    "assets/models/cessna/meshes/elevators.dae": {
+      "sha256": "186cc86a0748afd1a3833b1cb6a35ba21c7d08ee1d2e5718b031e766cfd2d3a9",
+      "bytes": 13295
+    },
+    "assets/models/cessna/meshes/left_aileron.dae": {
+      "sha256": "9fd7070f001f1c4cb4d7df46d27e0afd3110ac4e312fcb5fdebf5e6684a2cdf8",
+      "bytes": 7457
+    },
+    "assets/models/cessna/meshes/left_flap.dae": {
+      "sha256": "459c8ae304c47f1278f5be9ee0ca5f5868d2301a94bee1642d3484b252b2b643",
+      "bytes": 6909
+    },
+    "assets/models/cessna/meshes/right_aileron.dae": {
+      "sha256": "fc93b9f78b1adc3fd3eea9f8434f857a545837fa9ce2dd2dfcefa6602d6fcd28",
+      "bytes": 7468
+    },
+    "assets/models/cessna/meshes/right_flap.dae": {
+      "sha256": "4ef705a22eef490f859829ac916019a6ba6adacc274ef00c93932e964585bc1b",
+      "bytes": 9196
+    },
+    "assets/models/cessna/meshes/rudder.dae": {
+      "sha256": "8d8d10adfca6275bd3bf172ee4a1321a2aa3404ed840072bcdba6d76cf212fef",
+      "bytes": 17531
+    },
+    "assets/models/cessna/model.config": {
+      "sha256": "45a39e31caa15b9a204d59c7a29494dc11a8a6577c1270881a54c4ed0d0de626",
+      "bytes": 676
+    },
+    "assets/models/cessna/model.sdf": {
+      "sha256": "723beb85db3b6efd59f5c72f19245cbea60a05ed2f947b9ddb1913cdb052f8e9",
+      "bytes": 16494
+    },
+    "assets/models/city_terrain/materials/textures/city_terrain (original).jpg": {
+      "sha256": "9728964e1c720cbbfebf0c6f2537ac726f4472148fb58c5c3537adc2550029df",
+      "bytes": 125656
+    },
+    "assets/models/city_terrain/materials/textures/city_terrain.jpg": {
+      "sha256": "2d87dc76c37e82c5e1f54f34dab527277761f0addd53e1798940c9babbd4698b",
+      "bytes": 11336
+    },
+    "assets/models/city_terrain/materials/textures/forest.jpg": {
+      "sha256": "7eb4001e1ba649bdacd71272f4e7e341f65b857b00df049c2b53b23e23f1672b",
+      "bytes": 3740822
+    },
+    "assets/models/city_terrain/model.config": {
+      "sha256": "81d532f19e0e6b18a6d4a4b03dcf8ac6121d697179813266ee89ea6b9dddf44d",
+      "bytes": 293
+    },
+    "assets/models/city_terrain/model.sdf": {
+      "sha256": "316f2fe5b7cac037c9579dbd3bf48992bc8b85a732d47fcd9ad2f2d312e6d31e",
+      "bytes": 2077
+    },
+    "assets/models/dumpster/materials/scripts/dumpster.material": {
+      "sha256": "e6a07bfd7cb29d2a15b03d4ecb1f08033ac30f008d7675fb57899a250e05cffe",
+      "bytes": 329
+    },
+    "assets/models/dumpster/materials/textures/Dumpster_Diffuse.png": {
+      "sha256": "981d38cf2503bac69a491adbd1f1989a41fdc43948800f08de2ba798e490a781",
+      "bytes": 1262521
+    },
+    "assets/models/dumpster/materials/textures/Dumpster_Spec.png": {
+      "sha256": "994a5f72d9d9e691b29ef59bd103b36325e0164ead92bbd53242968bbdff4316",
+      "bytes": 733431
+    },
+    "assets/models/dumpster/meshes/dumpster.dae": {
+      "sha256": "4e30960e97c80b3a9df5c697f876d91d213d27c1c0ddae887cd340ba245b6ff7",
+      "bytes": 50836
+    },
+    "assets/models/dumpster/model-1_3.sdf": {
+      "sha256": "7962fc6783993de8f5432b25ebaf431462b79e853a43fb0ffaa86ad93c39195e",
+      "bytes": 725
+    },
+    "assets/models/dumpster/model-1_4.sdf": {
+      "sha256": "a09bb36c4a9f2f7c4d9ad78d826e8479dbee4020c7e81096b04d520b5b012b48",
+      "bytes": 725
+    },
+    "assets/models/dumpster/model.config": {
+      "sha256": "260133f70ef6875afefb34d1cf890cd824886a8b820772145530c6edfb5b8bf9",
+      "bytes": 448
+    },
+    "assets/models/dumpster/model.sdf": {
+      "sha256": "9c04e2c5abcc703fb39d4ab79cd3f3d0c44006d250393f8943357d80073be7e1",
+      "bytes": 726
+    },
+    "assets/models/europallet/materials/textures/Wood_Grain_Dark.jpg": {
+      "sha256": "4d232d4dc6b31fc43f284f25aef2ffd8e90b5c2a73be2919a56f2eab69952a48",
+      "bytes": 52299
+    },
+    "assets/models/europallet/meshes/europallet.dae": {
+      "sha256": "40768213818e9a42c1d83f16fc2dde1440cc2bbc0220ddfb06b208b0324c88b3",
+      "bytes": 109494
+    },
+    "assets/models/europallet/model.config": {
+      "sha256": "e4bae9869b07d0c1eeb1f29ef599bf94df12011356114a8270255226ff2e8393",
+      "bytes": 199
+    },
+    "assets/models/europallet/model.sdf": {
+      "sha256": "7eab5fce4a0165b589015b17ccbdf6a90b325decd423621e9f1c1c0b40965ab4",
+      "bytes": 4058
+    },
+    "assets/models/fast_food/materials/scripts/fast_food.material": {
+      "sha256": "159cc0df8456dece3b36645c5926f6674def3ea2e52c06edefc9fff70148f599",
+      "bytes": 493
+    },
+    "assets/models/fast_food/materials/textures/FastFood_Diffuse.png": {
+      "sha256": "a3d7466ff487aa3b7f296b5639ca873e5fd359ba49c440146c0072427c3aaf49",
+      "bytes": 1234040
+    },
+    "assets/models/fast_food/materials/textures/FastFood_Normal.png": {
+      "sha256": "102c69cfffcd043b07a19f9749942bf646690ffeebfd8097057a9dab1f1e3918",
+      "bytes": 1370563
+    },
+    "assets/models/fast_food/materials/textures/FastFood_Spec.png": {
+      "sha256": "916d13587a9ae1a6abf87a2b1d6589251a6513e0c9ea7e1848459cdf668a729b",
+      "bytes": 703723
+    },
+    "assets/models/fast_food/meshes/fast_food.dae": {
+      "sha256": "cc4d93dc8c6909c1cb158c9e1150eabf1d579e1854aa58308f8fcbee7684465e",
+      "bytes": 156081
+    },
+    "assets/models/fast_food/model-1_3.sdf": {
+      "sha256": "e4ab2c1f75e475af301679bfccd01c06c0634db11be3bb78ac90e04d9a51b61e",
+      "bytes": 789
+    },
+    "assets/models/fast_food/model-1_4.sdf": {
+      "sha256": "4219618e9c9604e714b5cf585ba1961d920a7f2511e70a4ae42a3c49821c8986",
+      "bytes": 926
+    },
+    "assets/models/fast_food/model.config": {
+      "sha256": "ef9b4afeb3f6496952e22a3bea2a19279975558d3299ec84739a7b160d873fd8",
+      "bytes": 472
+    },
+    "assets/models/fast_food/model.sdf": {
+      "sha256": "85ecc75970133b3548ee26a8270257eb5192ceadb1ac6e42e7e103699c2fa318",
+      "bytes": 993
+    },
+    "assets/models/fire_hydrant/materials/textures/fire_hydrant_diffuse.png": {
+      "sha256": "b089dc88690961c9aaaca7637517333635ee3d83def47b752902c8a9a5b4b2e5",
+      "bytes": 445620
+    },
+    "assets/models/fire_hydrant/materials/textures/fire_hydrant_spec.png": {
+      "sha256": "cc1dc313cb9e9b905edd83d317f290335060fe0d98cc9cbabf56363597373395",
+      "bytes": 161780
+    },
+    "assets/models/fire_hydrant/meshes/fire_hydrant.dae": {
+      "sha256": "62619b63da14653e245f7bba88c7417774518962f4ebc57def210ed8e57a937c",
+      "bytes": 68317
+    },
+    "assets/models/fire_hydrant/model-1_4.sdf": {
+      "sha256": "4a690cfac7ee5b9f3eb1f6b3730a0918bbd0978f405a1ea466691904c6fd7cf3",
+      "bytes": 534
+    },
+    "assets/models/fire_hydrant/model.config": {
+      "sha256": "44d474a31261ddc27c8d25ad6fc4aba4ae1225a1195cbf42810ffae889f43a20",
+      "bytes": 418
+    },
+    "assets/models/fire_hydrant/model.sdf": {
+      "sha256": "661b5ceb48ec1fa49e294116979c38166a035cc70fdddc84c6ae35ccea18ae33",
+      "bytes": 535
+    },
+    "assets/models/gas_station/materials/scripts/gas_station.material": {
+      "sha256": "56f8ab6ffa7bf29e5612ee8e3d08025fbd6780f2191fc3763103ac9934811b89",
+      "bytes": 505
+    },
+    "assets/models/gas_station/materials/textures/GasStation_Diffuse.png": {
+      "sha256": "1c244370d3788e07a16c63ffea59ffb5111dd67527a4d9a993c9fe23f8add276",
+      "bytes": 781427
+    },
+    "assets/models/gas_station/materials/textures/GasStation_Normal.png": {
+      "sha256": "36435595a614e5928d7394c63200a9cbd1b01bf7526006046257e4b67eb66d37",
+      "bytes": 239736
+    },
+    "assets/models/gas_station/materials/textures/GasStation_Spec.png": {
+      "sha256": "33d437f999cb264a2bb3a0feb2d27e943cee062dd940591d6315c40b83642c86",
+      "bytes": 412305
+    },
+    "assets/models/gas_station/meshes/gas_station.dae": {
+      "sha256": "5915cbf048a776fb89b13347f01ccba27f9f04e263d9be5c66769ecefb21110a",
+      "bytes": 725684
+    },
+    "assets/models/gas_station/model-1_3.sdf": {
+      "sha256": "94e7e1b9703500a7d9d7becc6828061538af41e3cf8225bab677035ca7b145db",
+      "bytes": 934
+    },
+    "assets/models/gas_station/model-1_4.sdf": {
+      "sha256": "769184075a2713a657af1d460f35bbdb66efd615e3b89bacc8fc252a1f12d0e7",
+      "bytes": 934
+    },
+    "assets/models/gas_station/model.config": {
+      "sha256": "e529f2517491ed23f5c905db90560aa71d9771d2ae1d69acf62e8c58709fa536",
+      "bytes": 465
+    },
+    "assets/models/gas_station/model.sdf": {
+      "sha256": "3958bfb2ddc0546166749975cdb99e042a7378d5aadf1259be1f177c868f70a7",
+      "bytes": 935
+    },
+    "assets/models/gps/gps.sdf": {
+      "sha256": "ed28b2b88fb667218d2e9c360fac77bd7cd73b4c620a1bd4237b690ddb146a99",
+      "bytes": 2902
+    },
+    "assets/models/gps/model.config": {
+      "sha256": "7d2c9be9e01d898ef42b0525aa97becb5f554d48e2d8e915e284ea84fe0c3d9c",
+      "bytes": 276
+    },
+    "assets/models/hokuyo_lidar/meshes/hokuyo.dae": {
+      "sha256": "a42fae2752bf64de16ff6fdf4f91f02d56c0f3bd259843890a43846acb215fb6",
+      "bytes": 87855
+    },
+    "assets/models/hokuyo_lidar/meshes/hokuyo_convex.stl": {
+      "sha256": "cba4bf854c8b9e561e8d55da63ab12a59a1c7f2e7961ea6a33f746dcaa58412b",
+      "bytes": 7484
+    },
+    "assets/models/hokuyo_lidar/model.config": {
+      "sha256": "4e6ba03120718cd227f4ee0676ccd45744d2af7cd60ab849c09a96c24db9a2a9",
+      "bytes": 389
+    },
+    "assets/models/hokuyo_lidar/model.sdf": {
+      "sha256": "39e07843f315410880f1021d005289e2b0399fce335fcc8530478c1b5f240471",
+      "bytes": 2361
+    },
+    "assets/models/house_1/materials/scripts/house_1.material": {
+      "sha256": "601c05b0c82cf6d13ba1e61e4fcadfb49327b941dd58da9e3ba8ecd946f61f17",
+      "bytes": 595
+    },
+    "assets/models/house_1/materials/textures/House_1_Diffuse.png": {
+      "sha256": "5f4369cc3e8a0b5642be1b9bebb650cdae6fd73d1c10049d5597c67081b24f39",
+      "bytes": 540174
+    },
+    "assets/models/house_1/materials/textures/House_1_Normal.png": {
+      "sha256": "12dc7a0d7baa237f904900ea9f13ca41e67ac0d91fbdf0c0de6d849d6520f94f",
+      "bytes": 703212
+    },
+    "assets/models/house_1/materials/textures/House_1_Spec.png": {
+      "sha256": "21a0809c7dbe6d40e702f3680449f9ce93bdc0b77c230d0609658719ecf57015",
+      "bytes": 589963
+    },
+    "assets/models/house_1/meshes/house_1.dae": {
+      "sha256": "0e4d77fe3369dea0d06957cf2571aa8d4509256510dc285b6423230cf94753ee",
+      "bytes": 308600
+    },
+    "assets/models/house_1/model-1_3.sdf": {
+      "sha256": "99974f9b492d633d3d33eed36fe7007ad5a33830e0d3fdf5f1db7a73fa4836fb",
+      "bytes": 869
+    },
+    "assets/models/house_1/model-1_4.sdf": {
+      "sha256": "23f85cc72e290e891839fc9487ce88ae126a6f4e7efbede2aaeee5961a0e1cdb",
+      "bytes": 870
+    },
+    "assets/models/house_1/model.config": {
+      "sha256": "b9c11a6d2b712336ecac8d1b5e4400740610691ac8dc415c454c3143680bc4d0",
+      "bytes": 467
+    },
+    "assets/models/house_1/model.sdf": {
+      "sha256": "d3d506ef2e86cccbc7ec474327fd6e2891826f2d30598375b445bc4ad67d2bc1",
+      "bytes": 870
+    },
+    "assets/models/house_2/materials/scripts/house_2.material": {
+      "sha256": "2cddf1f6e4913ce89a448727275e07665c2aebb12c02fb539d6c1989526a148f",
+      "bytes": 163
+    },
+    "assets/models/house_2/materials/textures/House_2_Diffuse.png": {
+      "sha256": "bc6b3931f200c23a6bbe8ca95bd2f78f2ec3af352e26cd88ddac89a92747ead3",
+      "bytes": 912042
+    },
+    "assets/models/house_2/meshes/house_2.dae": {
+      "sha256": "99a279004e1bc14b5323e98503cb2b788f8390465596fe7e17700e0631395fcf",
+      "bytes": 196804
+    },
+    "assets/models/house_2/model-1_3.sdf": {
+      "sha256": "62b110ef444ff7f9829ef9c4b91c7b4e7245821fcac56c0a1bd6fc6195b91c3a",
+      "bytes": 743
+    },
+    "assets/models/house_2/model-1_4.sdf": {
+      "sha256": "76c06c77a72c09b4c992014842e7d81ecdabb0a87961a3e01938c64a87e9db27",
+      "bytes": 963
+    },
+    "assets/models/house_2/model.config": {
+      "sha256": "6242467ba4e9d1960754dc9b177051e504a65326223c65438a66cac6d051be1d",
+      "bytes": 578
+    },
+    "assets/models/house_2/model.sdf": {
+      "sha256": "512f657aecc0e4bf677c04f1cdb80de03985264b5fa1c0db691493852ae559de",
+      "bytes": 963
+    },
+    "assets/models/house_3/materials/scripts/house_3.material": {
+      "sha256": "b132aec7359c58b590ad37cb83d0d3e4dea7b208d82c1a9d91178ad84d3abebe",
+      "bytes": 163
+    },
+    "assets/models/house_3/materials/textures/House_3_Diffuse.png": {
+      "sha256": "af602fa919b22b617b8dafd0d68f9dcfd4f181403d09fe434c4e9294462518aa",
+      "bytes": 707766
+    },
+    "assets/models/house_3/meshes/house_3.dae": {
+      "sha256": "712e1a3f2947a3fd354fe15f8ca36b2a1315ae76737387dbe815cd6112f56a2d",
+      "bytes": 325729
+    },
+    "assets/models/house_3/model-1_3.sdf": {
+      "sha256": "3572a238846786302e82a3b4e6bbba29544125dda47008b79db1791392510664",
+      "bytes": 743
+    },
+    "assets/models/house_3/model-1_4.sdf": {
+      "sha256": "306759ba295b27bad624975a62ff9f43aa0f0e0d47bd6e1b6ae920e44288f879",
+      "bytes": 964
+    },
+    "assets/models/house_3/model.config": {
+      "sha256": "d3a4f4ca2be8cde24a4b35bf4fc6c33bb9fbca53e4b27a5e12b3759a6afe1007",
+      "bytes": 578
+    },
+    "assets/models/house_3/model.sdf": {
+      "sha256": "4a1fc20b838e1cdd97b1eb718a3692bc2fc7c8c2c6271645a57790118fad623e",
+      "bytes": 963
+    },
+    "assets/models/lamp_post/materials/textures/Lamp_Post_Diffuse.png": {
+      "sha256": "59723830dcec2074011e902bf492d2c0d79f90d5d6689856a1a3728909630b23",
+      "bytes": 1460191
+    },
+    "assets/models/lamp_post/materials/textures/Lamp_Post_Emissive.png": {
+      "sha256": "a16b96ec2129267d87669c4fdee3bb38ae39ed26ffab386d04ab6c7c6ac04b45",
+      "bytes": 200509
+    },
+    "assets/models/lamp_post/materials/textures/Lamp_Post_Spec.png": {
+      "sha256": "5940f7d55ef77dc60f39563e35a24d8fbab0f94beb897b1072fc125cf915ff61",
+      "bytes": 770468
+    },
+    "assets/models/lamp_post/meshes/lamp_post.dae": {
+      "sha256": "d02cb26b0e547089d6594a064b18e2b91c32cb069663e75c7e08dfd63ef7d88b",
+      "bytes": 49029
+    },
+    "assets/models/lamp_post/model-1_3.sdf": {
+      "sha256": "41d624ba35038f8c5ce3473bf085bdc39ce6cc03d3e542f1f575eeacb7c76f22",
+      "bytes": 519
+    },
+    "assets/models/lamp_post/model-1_4.sdf": {
+      "sha256": "dd397180b01da3c1353a2e2562d8e96163ae780cc012ba6417132aa38fc7877a",
+      "bytes": 519
+    },
+    "assets/models/lamp_post/model.config": {
+      "sha256": "8514c8a60b826f547a007bd190aa090cd2681878eec9c8b52b15764782188994",
+      "bytes": 451
+    },
+    "assets/models/lamp_post/model.sdf": {
+      "sha256": "bdc4bcba8f38b8a7ef35f824efaf58d09ba09ade43728edb13015f385f3953cc",
+      "bytes": 586
+    },
+    "assets/models/ocean/materials/programs/GLSL/Waves.frag": {
+      "sha256": "a8f76b660931eff7d0e22ab0de7f7be0bcbc8cb216fe0a1a9e2457c637c8a780",
+      "bytes": 1925
+    },
+    "assets/models/ocean/materials/programs/GLSL/Waves.vert": {
+      "sha256": "70af077870ed3752c7a2eb4ea4d6b6e1f6ae2876e081edfce8ed3c49c4e0eaa8",
+      "bytes": 3266
+    },
+    "assets/models/ocean/materials/scripts/ocean.material": {
+      "sha256": "28a7cd3e27ddb72914990e2d86291c39905d037021cda547e3ded6cd70b79759",
+      "bytes": 1906
+    },
+    "assets/models/ocean/materials/textures/License and source soil_sand_0045_01.txt": {
+      "sha256": "adc825d279b11c7fb0a0d5aa9dc5920cd5cc61e4be5df6d031ded8365251df88",
+      "bytes": 640
+    },
+    "assets/models/ocean/materials/textures/clouds.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/materials/textures/clouds_bk.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/materials/textures/clouds_dn.jpg": {
+      "sha256": "58a56391e7a67dc3078597d4fb2cdfed0d9a5d40130d53e44f0c9d35a06248ed",
+      "bytes": 3618
+    },
+    "assets/models/ocean/materials/textures/clouds_fr.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/materials/textures/clouds_lf.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/materials/textures/clouds_rt.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/materials/textures/clouds_up.jpg": {
+      "sha256": "171045bf879bd823d3219ee0664ad48e7ebb5c49cba671e7f504dc9103577e6c",
+      "bytes": 3622
+    },
+    "assets/models/ocean/materials/textures/normals.dds": {
+      "sha256": "943b5d189997f460ff8d4a35f5259d36809a5c6669a440d99b4f8b5abe0d8e4b",
+      "bytes": 262271
+    },
+    "assets/models/ocean/materials/textures/soil_sand_0045_01.jpg": {
+      "sha256": "21915cc33c85f803602d6914b4d4614f5a288559dffe2aef0e89b30615eb5b87",
+      "bytes": 3748493
+    },
+    "assets/models/ocean/media/materials/programs/SimpleWaves.frag": {
+      "sha256": "a8f76b660931eff7d0e22ab0de7f7be0bcbc8cb216fe0a1a9e2457c637c8a780",
+      "bytes": 1925
+    },
+    "assets/models/ocean/media/materials/programs/SimpleWaves.vert": {
+      "sha256": "70af077870ed3752c7a2eb4ea4d6b6e1f6ae2876e081edfce8ed3c49c4e0eaa8",
+      "bytes": 3266
+    },
+    "assets/models/ocean/media/materials/scripts/sand.material": {
+      "sha256": "7c4b5fc22b55abeaa0446aa84a2f82c099a00456ce5d526ac99527a9294d4f13",
+      "bytes": 361
+    },
+    "assets/models/ocean/media/materials/scripts/water.material": {
+      "sha256": "974375cd63950fb83b2b6532a8049de11edb5acf6a3173e292eb72abfd2cbba5",
+      "bytes": 1616
+    },
+    "assets/models/ocean/media/materials/scripts/waves.material": {
+      "sha256": "b1fbe9ee243beabc4c65f3f54a3fbbf666232dec24e06a302ea71e3dbf746ea2",
+      "bytes": 1349
+    },
+    "assets/models/ocean/media/materials/textures/License and source for textures.txt": {
+      "sha256": "83f04c62e7863598904095a0bd2df95e4cce6a9bb0e213e1b9a7ddbcea1b4600",
+      "bytes": 865
+    },
+    "assets/models/ocean/media/materials/textures/clouds.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/media/materials/textures/clouds_bk.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/media/materials/textures/clouds_dn.jpg": {
+      "sha256": "58a56391e7a67dc3078597d4fb2cdfed0d9a5d40130d53e44f0c9d35a06248ed",
+      "bytes": 3618
+    },
+    "assets/models/ocean/media/materials/textures/clouds_fr.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/media/materials/textures/clouds_lf.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/media/materials/textures/clouds_rt.jpg": {
+      "sha256": "9d6e0936ae13a1bd0c50b07be4d01848ae0a3c0d51f2e5f333ee383ed68a338d",
+      "bytes": 12334
+    },
+    "assets/models/ocean/media/materials/textures/clouds_up.jpg": {
+      "sha256": "171045bf879bd823d3219ee0664ad48e7ebb5c49cba671e7f504dc9103577e6c",
+      "bytes": 3622
+    },
+    "assets/models/ocean/media/materials/textures/soil_sand_0045_01.jpg": {
+      "sha256": "21915cc33c85f803602d6914b4d4614f5a288559dffe2aef0e89b30615eb5b87",
+      "bytes": 3748493
+    },
+    "assets/models/ocean/media/materials/textures/water_water_0046_01.jpg": {
+      "sha256": "fc844efa43f4f50402611f77a0953fed9170c75b038463b4fd070b5fe3491037",
+      "bytes": 3723873
+    },
+    "assets/models/ocean/media/materials/textures/water_water_0051_01.jpg": {
+      "sha256": "ac9062a58a28d8762b330bf172efce786ba10d6465e458d1d7ccb0c1c42be073",
+      "bytes": 3923583
+    },
+    "assets/models/ocean/media/materials/textures/water_water_0076_03_s.jpg": {
+      "sha256": "93f29d8f9654d83c26301166b7fa19d04c7ffe79912f50853a4d87abd55efe6a",
+      "bytes": 1472569
+    },
+    "assets/models/ocean/media/materials/textures/water_water_0093_01.jpg": {
+      "sha256": "47a567dbb4c41860e1fccbfdfdcc937e52ba16b36bc369b14923edb19ddfff25",
+      "bytes": 5557283
+    },
+    "assets/models/ocean/media/materials/textures/wave_normals.dds": {
+      "sha256": "943b5d189997f460ff8d4a35f5259d36809a5c6669a440d99b4f8b5abe0d8e4b",
+      "bytes": 262271
+    },
+    "assets/models/ocean/media/models/sea_surface_1000m_x_1000m.dae": {
+      "sha256": "7fd2841722f83ae47968bfd7c783a6564a5432e1a7b945d9b23bc2f529f2e865",
+      "bytes": 486410
+    },
+    "assets/models/ocean/mesh-simple.dae": {
+      "sha256": "42376fdc175f46843eb96feba92b498c92a0875ad6b65c3872ac1c87530c984b",
+      "bytes": 157745
+    },
+    "assets/models/ocean/mesh.dae": {
+      "sha256": "7fd2841722f83ae47968bfd7c783a6564a5432e1a7b945d9b23bc2f529f2e865",
+      "bytes": 486410
+    },
+    "assets/models/ocean/mesh_below.dae": {
+      "sha256": "7263fe0e556d1966bd6940a7711765e9f296b87d9239a4ad5e575b3fc3dd8f4b",
+      "bytes": 161412
+    },
+    "assets/models/ocean/model.config": {
+      "sha256": "ac6a56b21bed536a6fb1fa05a818aa46927b23d30d2c64a57be1ff59c0da7616",
+      "bytes": 529
+    },
+    "assets/models/ocean/model.sdf": {
+      "sha256": "13d13ac55034215f6177ae610fcabc68614dfbf9e4c3bf4d3ba1008822a98699",
+      "bytes": 3331
+    },
+    "assets/models/ocean/ocean.sdf": {
+      "sha256": "ea512db7154634693f6964c1efb674836479cc975abe62bd7669be5b70b5fe6c",
+      "bytes": 3895
+    },
+    "assets/models/realsense_camera/materials/textures/realsense_diffuse.png": {
+      "sha256": "f59c0c91df8b1bf0ff89821cca3f4ed87addd9b6948f7eb20562c73ed59327db",
+      "bytes": 6451
+    },
+    "assets/models/realsense_camera/meshes/realsense.dae": {
+      "sha256": "df88d7930c0f0fdcc80c9eb3e19f2af8296a965e8e6db055ef3bb8e0df14fb85",
+      "bytes": 106658
+    },
+    "assets/models/realsense_camera/meshes/realsense_camera.dae": {
+      "sha256": "df88d7930c0f0fdcc80c9eb3e19f2af8296a965e8e6db055ef3bb8e0df14fb85",
+      "bytes": 106658
+    },
+    "assets/models/realsense_camera/model.config": {
+      "sha256": "87df068cf0db6a135c585431ed19060eeb10c49a7f33f21c292306004a832366",
+      "bytes": 248
+    },
+    "assets/models/realsense_camera/model.sdf": {
+      "sha256": "6ea9cf566c7eb81a64b3e87936ed843b4ec337c036da77ce162284ac04376e11",
+      "bytes": 4943
+    },
+    "assets/models/realsense_camera/realsense_camera.sdf": {
+      "sha256": "0745c705ac3a90cf16529a9b49729d34f49ce7b457998a4d3cc3f2fb6aab921c",
+      "bytes": 5178
+    },
+    "assets/models/shelves_high/materials/scripts/shelves_2.material": {
+      "sha256": "11963a5a033d774fd464dbd5ea3adf2ff230796883ddfea02136df976dbedcdd",
+      "bytes": 161
+    },
+    "assets/models/shelves_high/materials/textures/Metal_Aluminum_Anodized.jpg": {
+      "sha256": "499a7bb6e1d7bc1c2c47a9a769c34cda69b4809695149fa017f4161cdb581c45",
+      "bytes": 2508
+    },
+    "assets/models/shelves_high/materials/textures/Metal_Seamed.jpg": {
+      "sha256": "98b80b06330256fdd9843306bcb8fcbb4db40ea9df3e027737f8c16da78830fe",
+      "bytes": 920
+    },
+    "assets/models/shelves_high/materials/textures/Metal_Seamed_1.jpg": {
+      "sha256": "98b80b06330256fdd9843306bcb8fcbb4db40ea9df3e027737f8c16da78830fe",
+      "bytes": 920
+    },
+    "assets/models/shelves_high/materials/textures/__Metal_Seamed_1.jpg": {
+      "sha256": "98b80b06330256fdd9843306bcb8fcbb4db40ea9df3e027737f8c16da78830fe",
+      "bytes": 920
+    },
+    "assets/models/shelves_high/materials/textures/__Metal_Seamed_1_0.jpg": {
+      "sha256": "98b80b06330256fdd9843306bcb8fcbb4db40ea9df3e027737f8c16da78830fe",
+      "bytes": 920
+    },
+    "assets/models/shelves_high/meshes/shelves_high.dae": {
+      "sha256": "8eaf554d4058068bf287ca29e7c70f42c73d91efae24be30af6d54c674549cfa",
+      "bytes": 7207013
+    },
+    "assets/models/shelves_high/meshes/shelves_high_collision.dae": {
+      "sha256": "6b81dec4c6ce797cdcc79ebd47908a167e67729e039f1ac05daf78e1ec9fc47f",
+      "bytes": 28537
+    },
+    "assets/models/shelves_high/model.config": {
+      "sha256": "e5e718466b0c098182e705cf8356b1403a24d943a1079af418de4d0819a95059",
+      "bytes": 201
+    },
+    "assets/models/shelves_high/model.sdf": {
+      "sha256": "b29bcc1d2184ae799b346db47ab17869fd559450866074bf431bc15a5bca11ae",
+      "bytes": 1000
+    },
+    "assets/models/shelves_high2/materials/textures/__CorrogateShiny_.jpg": {
+      "sha256": "e9334d76e18c0fdd62e492693b69ff127cddfb0291038717f88700338e14cdbe",
+      "bytes": 1806
+    },
+    "assets/models/shelves_high2/meshes/shelves_high2.dae": {
+      "sha256": "a2a41ceda5da9459fe5c6d0dd438bda5345ca05a7ab4bad51fab225a593196ac",
+      "bytes": 5578395
+    },
+    "assets/models/shelves_high2/meshes/shelves_high2_collision.dae": {
+      "sha256": "4fe2f9bd2fb01abf6f29f09957e0b06f53679811920714199f4b4b194e57849c",
+      "bytes": 33255
+    },
+    "assets/models/shelves_high2/model.config": {
+      "sha256": "b9ccdf25a544690939afd028c19c9c40048a2190cd2e6b76afa8171f43c46dfb",
+      "bytes": 203
+    },
+    "assets/models/shelves_high2/model.sdf": {
+      "sha256": "5eac6c1ea3c3e17f107775001ad772ede649ddb51a4d7fcdcb643fc983c3f33e",
+      "bytes": 1008
+    },
+    "assets/models/sonar/model.config": {
+      "sha256": "8ff3698c1ba2bb704055ca5cec69df30d596e8aaf65a5881e9f92d8460556ea7",
+      "bytes": 243
+    },
+    "assets/models/sonar/model.sdf": {
+      "sha256": "89a3ffd33f484888a8f1b2e5d0adba13a641b3dd7deb74bd77a2c16152c1492e",
+      "bytes": 1204
+    },
+    "assets/models/stop_sign/materials/scripts/stopsign.material": {
+      "sha256": "26c9fbb1b9c4586fcb7df460eb3e74e29946fa8362e2583e7db325b511e39668",
+      "bytes": 329
+    },
+    "assets/models/stop_sign/materials/textures/StopSign_Diffuse.png": {
+      "sha256": "fe8be5337cf7ee4b0d5e507386b76874d67a48669f3928ec6ad117459fd6380a",
+      "bytes": 290259
+    },
+    "assets/models/stop_sign/materials/textures/StopSign_Spec.png": {
+      "sha256": "938d8bb69e908e1a05359efd29e81f6f76ac6abb503e27fa537a5f7faca88f34",
+      "bytes": 354166
+    },
+    "assets/models/stop_sign/meshes/stop_sign.dae": {
+      "sha256": "24386c1af2cb818c12a98943b830c38d2e4dab495a23f4445449baf421d3ade4",
+      "bytes": 8331
+    },
+    "assets/models/stop_sign/model-1_3.sdf": {
+      "sha256": "39a24f9b8cb3c7856c4d26b345f6389c233a5a3e5180fe778e2fdeae16d62528",
+      "bytes": 732
+    },
+    "assets/models/stop_sign/model-1_4.sdf": {
+      "sha256": "096956a1dc0e5884b386c6a37c9f168017fca9e1f7de21b2d54a5b04decc2cb4",
+      "bytes": 732
+    },
+    "assets/models/stop_sign/model.config": {
+      "sha256": "88831364d7c769dc15f82a8918f657fa0de78d42e70eab6858d0d3b7a330d12e",
+      "bytes": 450
+    },
+    "assets/models/stop_sign/model.sdf": {
+      "sha256": "94e576855925d6c21159181e5e88b9e67a48b16638b509f08707bc1ffa77e035",
+      "bytes": 759
+    },
+    "assets/models/typhoon_h480/meshes/cgo3_camera_remeshed_v1.stl": {
+      "sha256": "5f039d32add818c96807c3c2766bd3a2b8e935244f3abfb42fe50633066cc74b",
+      "bytes": 749684
+    },
+    "assets/models/typhoon_h480/meshes/cgo3_horizontal_arm_remeshed_v1.stl": {
+      "sha256": "2a47efa7f7015f74c18fa939ab06c6965dfe929a8645ef6300b666f48153b960",
+      "bytes": 500034
+    },
+    "assets/models/typhoon_h480/meshes/cgo3_mount_remeshed_v1.stl": {
+      "sha256": "55c30eac7887e9896836a88965038ec3367fdb339e453d2eae5c1fc607d6d166",
+      "bytes": 1000084
+    },
+    "assets/models/typhoon_h480/meshes/cgo3_vertical_arm_remeshed_v1.stl": {
+      "sha256": "f354c40dc7714c7961db52e175d73bdfdd71febf4c79ca4ad677e04d63193d3f",
+      "bytes": 399984
+    },
+    "assets/models/typhoon_h480/meshes/leg1_remeshed_v3.stl": {
+      "sha256": "fbb9c4c5f12dedde31da17a37c78c37547c3b7f061ebeae736cc1c0fdcc4adda",
+      "bytes": 500084
+    },
+    "assets/models/typhoon_h480/meshes/leg2_remeshed_v3.stl": {
+      "sha256": "a5fc0219871230fd95149c5f18eeef3579fb19b909bb455b5a9c16faab73deb9",
+      "bytes": 500034
+    },
+    "assets/models/typhoon_h480/meshes/main_body_remeshed_v3.stl": {
+      "sha256": "395fa916b232cc6f7d8e67134144595e065b8ce68157458bd22c8c00a6cfd959",
+      "bytes": 8945084
+    },
+    "assets/models/typhoon_h480/meshes/prop_ccw_assembly_remeshed_v3.stl": {
+      "sha256": "5d2ab65c9023c1cd6dcc703f5ba65c7c7d7200ef6057de8a8a50c155a323767b",
+      "bytes": 632084
+    },
+    "assets/models/typhoon_h480/meshes/prop_cw_assembly_remeshed_v3.stl": {
+      "sha256": "f28d44bbf873fcc261e7fade1fa0008382bbe45a234119fc0f5acf232e9c431b",
+      "bytes": 692084
+    },
+    "assets/models/typhoon_h480/meshes/prop_guard_jybhz.stl": {
+      "sha256": "e384be93d8f386bfac574ad205b6052b53898048e53dd9be0f2a0994f65ca693",
+      "bytes": 150084
+    },
+    "assets/models/typhoon_h480/model.config": {
+      "sha256": "9cf3e33fe1f471b30e5a2b4d4683827578bfad902a9b3dfaee0848e339bd5335",
+      "bytes": 341
+    },
+    "assets/models/typhoon_h480/typhoon_h480.sdf": {
+      "sha256": "7a3f042eb6e997afdc4af86e99f3d0d49fe1acd367962945399539ec3deeb714",
+      "bytes": 46926
+    },
+    "assets/models/typhoon_h480/typhoon_h480.sdf.jinja": {
+      "sha256": "85dd59246290385defb80bc7180964f3da95e26290586a8f44a50656297e88e5",
+      "bytes": 47066
+    },
+    "assets/models/typhoon_h480/typhoon_h480.sdf.last_generated": {
+      "sha256": "7a3f042eb6e997afdc4af86e99f3d0d49fe1acd367962945399539ec3deeb714",
+      "bytes": 46926
+    },
+    "assets/models/walker/casual_female.dae": {
+      "sha256": "d784050bc51f3e94d76705462851076a1fcac6e6f39a1a02eedb9c6c1b603536",
+      "bytes": 3887837
+    },
+    "assets/models/walker/color.txt": {
+      "sha256": "5df5f92ad45941b96244ea0b127951ce6a74cbf7320210d64c886626a8f9d4fd",
+      "bytes": 2359
+    },
+    "assets/models/walker/model.config": {
+      "sha256": "44b29e7355a9aee840109d438a3fbd568b0a11e3fd9c3ba004a93e41aaf3d6fd",
+      "bytes": 238
+    },
+    "assets/models/walker/walk_0.dae": {
+      "sha256": "4dea2476b652a575cbed75ee2537f80d08cc1ccdf923d6055cdf6fd83dc88665",
+      "bytes": 2277353
+    },
+    "assets/models/walker/walk_1.dae": {
+      "sha256": "73db1c3f6e2c6f68ac349c49e623e8d7136895927973557c4a3f0edfeef95f24",
+      "bytes": 2277350
+    },
+    "assets/models/walker/walk_2.dae": {
+      "sha256": "2a08da9162d4d47be3759e762f4df8a4045a3de42548a1cee82f26208abb9b6a",
+      "bytes": 2277351
+    },
+    "assets/models/walker/walk_3.dae": {
+      "sha256": "3de9e53b75aa8ed99fe99ed059f4c78db9e91166876315b4ad3070cbad4cf483",
+      "bytes": 2277275
+    },
+    "assets/models/walker/walk_4.dae": {
+      "sha256": "d4b279bbe4409067c09ed9d02ad5d68fed39c3667692e68d2416a86bd881708c",
+      "bytes": 2277349
+    },
+    "assets/models/walker/walk_5.dae": {
+      "sha256": "cd930d3574bba3c99390cf973d4791d39564f2cc6e819907b81c4437bb902cf4",
+      "bytes": 2277349
+    }
+  }
+}

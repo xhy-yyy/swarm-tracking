@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <version>0.0.0</version>
+  <name>odom_visualization</name>
+  <description>
+     odom_visualization
+  </description>
+  <maintainer email="eeshaojie@todo.todo">Shaojie Shen</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/odom_visualization</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>pose_utils</build_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>pose_utils</exec_depend>
+  <depend>xyz</depend>
+</package>

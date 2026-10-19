@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name> rviz_plugins </name>
+  <description>
+    Additional plugins for rviz
+  </description>
+  <version>0.1.0</version>
+  <maintainer email="eeshaojie@ust.hk">Shaojie Shen</maintainer>
+  <maintainer email="wwuar@connect.ust.hk">william.wu</maintainer>
+  <license>LGPLv3</license>
+  <url>http://ros.org/wiki/rviz_plugins</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>qtbase5-dev     </build_depend>
+  <build_depend>message_runtime </build_depend>
+  <exec_depend>message_runtime   </exec_depend>
+  <exec_depend>libqt5-core       </exec_depend>
+  <exec_depend>libqt5-gui        </exec_depend>
+  <exec_depend>libqt5-widgets    </exec_depend>
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+  <depend>roscpp</depend>
+  <depend>rviz</depend>
+  <depend>multi_map_server</depend>
+</package>

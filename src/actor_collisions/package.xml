@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>actor_collisions</name>
+  <version>0.1.0</version>
+  <description>Gazebo actor collision plugin from the OSRF examples.</description>
+  <maintainer email="xhy-yyy@users.noreply.github.com">xhy</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>gazebo_ros</depend>
+</package>

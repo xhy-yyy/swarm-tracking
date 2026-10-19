@@ -1,0 +1,294 @@
+<?xml version="1.0"?>
+<launch>
+    <!--
+    # ROBOCUP_INLINE_WORLD_GENERATOR
+    import copy
+    import math
+    import os
+    from pathlib import Path
+    import re
+    import sys
+    import tempfile
+    import xml.etree.ElementTree as ET
+
+    world_file, output_file, model_file, prefix, pose_text, tcp_text, gimbal_text = sys.argv[1:]
+    source = Path(world_file)
+    output = Path(output_file)
+    if source.resolve() == output.resolve():
+        raise ValueError('gen_world must differ from the original world')
+    if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*', prefix):
+        raise ValueError('Invalid vehicle name prefix')
+
+    poses = [tuple(float(v) for v in entry.split(',')) for entry in pose_text.split(';')]
+    if len(poses) != 6 or any(len(p) != 3 for p in poses):
+        raise ValueError('spawn_poses must contain six x,y,z positions')
+    if not all(math.isfinite(v) for p in poses for v in p):
+        raise ValueError('spawn_poses must contain finite numbers')
+    tcp_base, gimbal_base = int(tcp_text), int(gimbal_text)
+    if not all(1 <= port <= 65530 for port in (tcp_base, gimbal_base)):
+        raise ValueError('Invalid port base for six vehicles')
+
+    world_text = source.read_bytes().decode('utf-8')
+    world = ET.fromstring(world_text).find('world')
+    if world is None:
+        raise ValueError('Input SDF must contain a world')
+    template = ET.parse(model_file).getroot().find('model')
+    if template is None:
+        raise ValueError('Aircraft SDF must contain a model')
+    names = {child.get('name') for child in world}
+    names.update(child.findtext('name') for child in world.findall('include'))
+
+    def set_plugin_value(model, plugin_name, tag, value):
+        plugin = model.find("plugin[@name='%s']" % plugin_name)
+        if plugin is None:
+            raise ValueError('Missing aircraft plugin: ' + plugin_name)
+        element = plugin.find(tag)
+        if element is None:
+            element = ET.SubElement(plugin, tag)
+        element.text = str(value)
+
+    blocks = []
+    for index, position in enumerate(poses):
+        name = '%s_%d' % (prefix, index)
+        if name in names:
+            raise ValueError('Aircraft already exists in input world: ' + name)
+        model = copy.deepcopy(template)
+        model.set('name', name)
+        pose = model.find('pose')
+        if pose is None:
+            pose = ET.Element('pose')
+            model.insert(0, pose)
+        base = [float(v) for v in (pose.text or '0 0 0 0 0 0').split()]
+        if len(base) != 6:
+            raise ValueError('Aircraft model pose must contain six numbers')
+        pose.text = ' '.join(format(v, '.12g') for v in
+                            [base[i] + position[i] for i in range(3)] + base[3:])
+        set_plugin_value(model, 'mavlink_interface', 'mavlink_tcp_port', tcp_base + index)
+        set_plugin_value(model, 'gimbal_controller', 'udp_gimbal_port_remote', gimbal_base + index)
+        blocks.append(ET.tostring(model, encoding='unicode'))
+
+    closing = world_text.rfind('</world>')
+    if closing < 0:
+        raise ValueError('Input world closing tag is missing')
+    generated = world_text[:closing] + '\n' + '\n'.join(blocks) + '\n' + world_text[closing:]
+    ET.fromstring(generated)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=str(output.parent), delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(generated.encode('utf-8'))
+        os.replace(str(temporary), str(output))
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+    sys.stdout.write(str(output))
+    -->
+    <!--
+    # ROBOCUP_INLINE_READY_GATE
+    import os
+    from pathlib import Path
+    import sys
+    import time
+
+    phase, prefix, tcp_text, timeout_text = sys.argv[1:5]
+    command = sys.argv[5:]
+    deadline = time.monotonic() + float(timeout_text)
+    if not command:
+        raise ValueError('Missing process command')
+    if phase == 'px4':
+        import rospy
+        from sensor_msgs.msg import LaserScan
+        rospy.init_node('robocup_startup_wait', anonymous=True, disable_signals=True)
+        print('[robocup_xhyyy] Waiting for six CPU lidar sensors', flush=True)
+        for index in range(6):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError('Timed out waiting for six CPU lidar sensors')
+            rospy.wait_for_message('/%s_%d/scan' % (prefix, index), LaserScan, timeout=remaining)
+        rospy.signal_shutdown('All six lidar sensors are ready')
+    elif phase == 'mavros':
+        expected = set(range(int(tcp_text), int(tcp_text) + 6))
+        print('[robocup_xhyyy] Waiting for six PX4 simulator connections', flush=True)
+        while True:
+            connected = set()
+            for line in Path('/proc/net/tcp').read_text().splitlines()[1:]:
+                fields = line.split()
+                if fields[3] == '01':
+                    connected.add(int(fields[1].split(':')[1], 16))
+            if expected.issubset(connected):
+                break
+            if time.monotonic() >= deadline:
+                raise RuntimeError('Timed out waiting for six PX4 simulator TCP connections')
+            time.sleep(0.1)
+    else:
+        raise ValueError('Unknown startup phase: ' + phase)
+    print('[robocup_xhyyy] Ready, starting ' + phase.upper(), flush=True)
+    os.execvp(command[0], command)
+    -->
+    <arg name="est" default="ekf2"/>
+    <arg name="world" default="$(find swarm_simulation)/worlds/competition/base1.world"/>
+    <arg name="vehicle" default="typhoon_h480"/>
+    <arg name="sdf" default="typhoon_h480_xhyyy"/>
+    <!-- 方案 A： -->
+    <!-- <arg name="spawn_poses" default="0,-3,0;0,0,0;0,3,0;-3,-3,0;-3,0,0;-3,3,0"/> -->
+    <!-- 方案 B： -->
+    <arg name="spawn_poses" default="-14,-3,0;-14,0,0;-14,3,0;-17,-3,0;-17,0,0;-17,3,0"/>
+    <arg name="mavlink_tcp_base" default="4560"/>
+    <arg name="udp_gimbal_base" default="13030"/>
+    <arg name="startup_timeout" default="120"/>
+    <arg name="ready_gate"
+         default="python3 -c &quot;import sys, textwrap, xml.dom.minidom as x; doc = x.parse(sys.argv.pop(1)); code = next(n.data for n in doc.documentElement.childNodes if n.nodeType == n.COMMENT_NODE and n.data.lstrip().startswith('# ROBOCUP_INLINE_READY_GATE')); exec(textwrap.dedent(code))&quot; &quot;$(dirname)/six_vehicles.launch&quot;"/>
+    <arg name="interactive" default="true"/>
+    <arg unless="$(arg interactive)" name="px4_command_arg1" value=""/>
+    <arg if="$(arg interactive)" name="px4_command_arg1" value="-d"/>
+    <arg name="gen_world" default="$(env HOME)/.ros/swarm_tracking_six_vehicles.world"/>
+    <arg name="gui" default="true"/>
+    <arg name="debug" default="false"/>
+    <arg name="verbose" default="false"/>
+    <arg name="paused" default="false"/>
+
+    <!-- 解析时生成六机地图副本，完成后才启动 Gazebo；原始地图只读。 -->
+    <param name="robocup_xhyyy/generated_world" type="str"
+           command="python3 -c &quot;import sys, textwrap, xml.dom.minidom as x; doc = x.parse(sys.argv.pop(1)); code = next(n.data for n in doc.documentElement.childNodes if n.nodeType == n.COMMENT_NODE and n.data.lstrip().startswith('# ROBOCUP_INLINE_WORLD_GENERATOR')); exec(textwrap.dedent(code))&quot;
+                    &quot;$(dirname)/six_vehicles.launch&quot;
+                    &quot;$(arg world)&quot; &quot;$(arg gen_world)&quot;
+                    &quot;$(find swarm_simulation)/models/$(arg sdf)/$(arg sdf).sdf&quot;
+                    &quot;$(arg vehicle)&quot; &quot;$(arg spawn_poses)&quot;
+                    &quot;$(arg mavlink_tcp_base)&quot; &quot;$(arg udp_gimbal_base)&quot;"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="world_name" value="$(arg gen_world)"/>
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="paused" value="$(arg paused)"/>
+    </include>
+
+    <group ns="typhoon_h480_0">
+        <arg name="ID" value="0"/>
+        <arg name="fcu_url" default="udp://:24540@localhost:34580"/>
+        <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+        <env name="PX4_ESTIMATOR" value="$(arg est)"/>
+        <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+        <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+              launch-prefix="$(arg ready_gate) px4 $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)"
+              args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)"/>
+        <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" output="screen"
+              launch-prefix="$(arg ready_gate) mavros $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)">
+            <param name="fcu_url" value="$(arg fcu_url)"/>
+            <param name="gcs_url" value=""/>
+            <param name="target_system_id" value="$(eval 1 + arg('ID'))"/>
+            <param name="target_component_id" value="1"/>
+            <param name="fcu_protocol" value="v2.0"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_pluginlists.yaml"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_config.yaml"/>
+        </node>
+    </group>
+
+    <group ns="typhoon_h480_1">
+        <arg name="ID" value="1"/>
+        <arg name="fcu_url" default="udp://:24541@localhost:34581"/>
+        <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+        <env name="PX4_ESTIMATOR" value="$(arg est)"/>
+        <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+        <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+              launch-prefix="$(arg ready_gate) px4 $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)"
+              args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)"/>
+        <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" output="screen"
+              launch-prefix="$(arg ready_gate) mavros $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)">
+            <param name="fcu_url" value="$(arg fcu_url)"/>
+            <param name="gcs_url" value=""/>
+            <param name="target_system_id" value="$(eval 1 + arg('ID'))"/>
+            <param name="target_component_id" value="1"/>
+            <param name="fcu_protocol" value="v2.0"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_pluginlists.yaml"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_config.yaml"/>
+        </node>
+    </group>
+
+    <group ns="typhoon_h480_2">
+        <arg name="ID" value="2"/>
+        <arg name="fcu_url" default="udp://:24542@localhost:34582"/>
+        <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+        <env name="PX4_ESTIMATOR" value="$(arg est)"/>
+        <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+        <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+              launch-prefix="$(arg ready_gate) px4 $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)"
+              args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)"/>
+        <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" output="screen"
+              launch-prefix="$(arg ready_gate) mavros $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)">
+            <param name="fcu_url" value="$(arg fcu_url)"/>
+            <param name="gcs_url" value=""/>
+            <param name="target_system_id" value="$(eval 1 + arg('ID'))"/>
+            <param name="target_component_id" value="1"/>
+            <param name="fcu_protocol" value="v2.0"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_pluginlists.yaml"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_config.yaml"/>
+        </node>
+    </group>
+
+    <group ns="typhoon_h480_3">
+        <arg name="ID" value="3"/>
+        <arg name="fcu_url" default="udp://:24543@localhost:34583"/>
+        <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+        <env name="PX4_ESTIMATOR" value="$(arg est)"/>
+        <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+        <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+              launch-prefix="$(arg ready_gate) px4 $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)"
+              args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)"/>
+        <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" output="screen"
+              launch-prefix="$(arg ready_gate) mavros $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)">
+            <param name="fcu_url" value="$(arg fcu_url)"/>
+            <param name="gcs_url" value=""/>
+            <param name="target_system_id" value="$(eval 1 + arg('ID'))"/>
+            <param name="target_component_id" value="1"/>
+            <param name="fcu_protocol" value="v2.0"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_pluginlists.yaml"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_config.yaml"/>
+        </node>
+    </group>
+
+    <group ns="typhoon_h480_4">
+        <arg name="ID" value="4"/>
+        <arg name="fcu_url" default="udp://:24544@localhost:34584"/>
+        <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+        <env name="PX4_ESTIMATOR" value="$(arg est)"/>
+        <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+        <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+              launch-prefix="$(arg ready_gate) px4 $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)"
+              args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)"/>
+        <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" output="screen"
+              launch-prefix="$(arg ready_gate) mavros $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)">
+            <param name="fcu_url" value="$(arg fcu_url)"/>
+            <param name="gcs_url" value=""/>
+            <param name="target_system_id" value="$(eval 1 + arg('ID'))"/>
+            <param name="target_component_id" value="1"/>
+            <param name="fcu_protocol" value="v2.0"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_pluginlists.yaml"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_config.yaml"/>
+        </node>
+    </group>
+
+    <group ns="typhoon_h480_5">
+        <arg name="ID" value="5"/>
+        <arg name="fcu_url" default="udp://:24545@localhost:34585"/>
+        <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+        <env name="PX4_ESTIMATOR" value="$(arg est)"/>
+        <param name="robotNamespace" value="$(arg vehicle)_$(arg ID)"/>
+        <node name="sitl_$(arg ID)" pkg="px4" type="px4" output="screen"
+              launch-prefix="$(arg ready_gate) px4 $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)"
+              args="$(find px4)/build/px4_sitl_default/etc -s etc/init.d-posix/rcS -i $(arg ID) -w sitl_$(arg vehicle)_$(arg ID) $(arg px4_command_arg1)"/>
+        <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" output="screen"
+              launch-prefix="$(arg ready_gate) mavros $(arg vehicle) $(arg mavlink_tcp_base) $(arg startup_timeout)">
+            <param name="fcu_url" value="$(arg fcu_url)"/>
+            <param name="gcs_url" value=""/>
+            <param name="target_system_id" value="$(eval 1 + arg('ID'))"/>
+            <param name="target_component_id" value="1"/>
+            <param name="fcu_protocol" value="v2.0"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_pluginlists.yaml"/>
+            <rosparam command="load" file="$(find mavros)/launch/px4_config.yaml"/>
+        </node>
+    </group>
+
+</launch>

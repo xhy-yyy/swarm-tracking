@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>swarm_simulation</name>
+  <version>0.1.0</version>
+  <description>Six-vehicle simulation resources and camera IMU plugin.</description>
+  <maintainer email="xhy-yyy@users.noreply.github.com">xhy</maintainer>
+  <license>Apache-2.0</license>
+  <license>MIT</license>
+  <license>BSD-3-Clause</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>gazebo_plugins</exec_depend>
+  <exec_depend>mavros</exec_depend>
+  <exec_depend>ros_actor_cmd_pose_plugin</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+  <export>
+    <gazebo_ros plugin_path="${prefix}/lib" gazebo_model_path="${prefix}/models"/>
+  </export>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>gazebo_ros</depend>
+</package>

@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>traj_utils</name>
+  <version>0.0.0</version>
+  <description>The traj_utils package</description>
+  <maintainer email="bzhouai@todo.todo">bzhouai</maintainer>
+  <license>GPL-3.0-only</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <build_export_depend>catkin</build_export_depend>
+  <exec_depend>catkin</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <export>
+  </export>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+</package>

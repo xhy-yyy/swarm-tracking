@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<!-- swarm_fly_px4.launch —— 6 机 fly_px4_2 状态机主控                     -->
+<!-- 启动 6 个 fly_px4_2 节点, 每架对应一个 typhoon_h480_{i} 命名空间:       -->
+<!--   typhoon_h480_0 <-> drone_id=1 (RACER 1-based)                       -->
+<!--   typhoon_h480_1 <-> drone_id=2                                       -->
+<!--   typhoon_h480_5 <-> drone_id=6                                       -->
+<!-- 任务流(每架独立): 探索(RACER 转发) -> AUTO.LAND 降落 (跳过独立起飞)   -->
+<!-- 已去掉就绪屏障: 解锁+OFFBOARD 后直接进 EXPLORE, 每机立即发 /move_base_simple/goal -->
+<!--          触发本机 RACER (触发与爬升并行, 先起飞的机先探索)                  -->
+<!-- 启动顺序:                                                              -->
+<!--   1. roslaunch px4 multi_vehicle_6.launch            (Gazebo+PX4+mavros)-->
+<!--   2. roslaunch exploration_manager swarm_exploration_xtdrone.launch   -->
+<!--   3. roslaunch fly_px4 swarm_fly_px4.launch        (本 launch)        -->
+<!-- init_x/init_y: spawn 偏移(世界帧下该机本地原点坐标), 须与
+     swarm_exploration_xtdrone.launch 中各机 init_x/init_y 一致. RACER pos_cmd 是世界帧,
+     PX4 FRAME_LOCAL_NED 是本地帧, fly_px4_2 转发前用此偏移做 世界->本地 转换. -->
+<!-- 限高: 规则"飞行高度被限制为 6 米以下"; 裁判 score_cal.py 检测到任一架 z>6.5
+     会 sys.exit(0) 直接判废本次尝试.
+     二维定高后: 悬停/指令钳位下限 3.6 -> pos_cmd 钳位 4.4 -> 软保护 4.7 -> 硬保护 5.0, 四层余量. -->
+<launch>
+    <arg name="drone_num"      default="6"/>
+    <!-- 高度钳位需与 RACER flight_height 对齐；解锁并进入 OFFBOARD 后直接 EXPLORE。
+         无规划指令时保持 min_expl_z，软限持续超时下压，硬限立即降落。 -->
+    <arg name="min_expl_z"     default="3.6"/>   <!-- 探索 z 下限钳位(= RACER box_min_z) -->
+    <arg name="max_expl_z"     default="4.4"/>   <!-- 探索 z 上限钳位(= RACER box_max_z) -->
+    <arg name="z_soft_limit"   default="4.7"/>   <!-- 超此高度 0.3s 强制下压到 max_expl_z -->
+    <arg name="z_hard_limit"   default="5.0"/>   <!-- 超此高度立即 AUTO.LAND -->
+
+    <!-- 指令过期依次保持当前位置、原地转向和沿历史轨迹回退。
+         新鲜指令下的冻结另行检测；规划器重启后重发目标。 -->
+    <arg name="cmd_timeout"       default="2.0"/>
+    <arg name="stuck_yaw_sec"     default="6.0"/>
+    <arg name="stuck_retreat_sec" default="12.0"/>
+    <arg name="retreat_dist"      default="8.0"/>
+    <arg name="frozen_sec"        default="25.0"/>
+    <arg name="spin_rate_deg"     default="30.0"/>
+    <arg name="retreat_hold"      default="8.0"/>
+    <!-- 只有曾飞起且低高度持续 crash_hold 的飞机才判坠机，避免误判地面待命。 -->
+    <arg name="crash_z"           default="1.5"/>
+    <arg name="crash_hold"        default="5.0"/>
+
+    <!-- 跟踪保留 RACER 水平/高度 PVA，仅由主控快速覆盖偏航。 -->
+    <!-- 机头转速上限: 云台 yaw 是跟随机体的 PID, 转太快相机姿态会滞后
+         (30deg/s + 0.15s 滞后 = 4.5deg = 6.5m 处 0.51m 定位误差, 吃掉一半预算)。
+         vision 侧另有一个 15deg/s 的门会丢弃转太快时的检测, 两边配合。 -->
+    <arg name="track_yaw_rate_max"     default="45.0"/>
+    <!-- 死区: 目标估计有噪声, 不设死区机头会一直小幅抖, 云台跟着晃 -->
+    <arg name="track_yaw_deadband_deg" default="3.0"/>
+    <arg name="track_lead_sec"         default="0.2"/>
+    <arg name="track_stale_sec"        default="0.5"/>
+    <!-- 搜索模式的机头扫掠: 把有效扫幅从 9.1m 提到约 12m (+33%),
+         这是 600 秒内能不能把 20000 平米扫完的关键之一 -->
+    <arg name="search_sweep_deg"       default="30.0"/>
+    <arg name="search_sweep_rate"      default="40.0"/>
+    <!-- RACER FINISH 不单独触发降落；mission_deadline_sec 限制任务时长，
+         mission_wait_sec 控制融合未启动时的回退。 -->
+    <arg name="mission_deadline_sec"   default="585.0"/>
+    <arg name="mission_wait_sec"       default="30.0"/>
+
+    <!-- drone 1 (typhoon_h480_0, spawn (-14,-3)) -->
+    <node pkg="fly_px4" type="fly_px4_2" name="fly_px4_2_1" output="screen">
+        <param name="drone_ns"       value="typhoon_h480_0"/>
+        <param name="drone_id"       value="1"/>
+        <param name="drone_num"      value="$(arg drone_num)"/>
+        <param name="min_expl_z"     value="$(arg min_expl_z)"/>
+        <param name="max_expl_z"     value="$(arg max_expl_z)"/>
+        <param name="z_soft_limit"   value="$(arg z_soft_limit)"/>
+        <param name="z_hard_limit"   value="$(arg z_hard_limit)"/>
+        <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+        <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+        <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+        <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+        <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+        <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+        <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+        <param name="crash_z"           value="$(arg crash_z)"/>
+        <param name="crash_hold"        value="$(arg crash_hold)"/>
+        <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+        <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+        <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+        <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+        <param name="search_sweep_deg"       value="$(arg search_sweep_deg)"/>
+        <param name="search_sweep_rate"      value="$(arg search_sweep_rate)"/>
+        <param name="mission_deadline_sec"   value="$(arg mission_deadline_sec)"/>
+        <param name="mission_wait_sec"       value="$(arg mission_wait_sec)"/>
+        <param name="init_x"         value="-14"/>
+        <param name="init_y"         value="-3"/>
+    </node>
+
+    <!-- drone 2 (typhoon_h480_1, spawn (-14,0)) -->
+    <node pkg="fly_px4" type="fly_px4_2" name="fly_px4_2_2" output="screen">
+        <param name="drone_ns"       value="typhoon_h480_1"/>
+        <param name="drone_id"       value="2"/>
+        <param name="drone_num"      value="$(arg drone_num)"/>
+        <param name="min_expl_z"     value="$(arg min_expl_z)"/>
+        <param name="max_expl_z"     value="$(arg max_expl_z)"/>
+        <param name="z_soft_limit"   value="$(arg z_soft_limit)"/>
+        <param name="z_hard_limit"   value="$(arg z_hard_limit)"/>
+        <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+        <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+        <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+        <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+        <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+        <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+        <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+        <param name="crash_z"           value="$(arg crash_z)"/>
+        <param name="crash_hold"        value="$(arg crash_hold)"/>
+        <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+        <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+        <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+        <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+        <param name="search_sweep_deg"       value="$(arg search_sweep_deg)"/>
+        <param name="search_sweep_rate"      value="$(arg search_sweep_rate)"/>
+        <param name="mission_deadline_sec"   value="$(arg mission_deadline_sec)"/>
+        <param name="mission_wait_sec"       value="$(arg mission_wait_sec)"/>
+        <param name="init_x"         value="-14"/>
+        <param name="init_y"         value="0"/>
+    </node>
+
+    <!-- drone 3 (typhoon_h480_2, spawn (-14,3)) -->
+    <node pkg="fly_px4" type="fly_px4_2" name="fly_px4_2_3" output="screen">
+        <param name="drone_ns"       value="typhoon_h480_2"/>
+        <param name="drone_id"       value="3"/>
+        <param name="drone_num"      value="$(arg drone_num)"/>
+        <param name="min_expl_z"     value="$(arg min_expl_z)"/>
+        <param name="max_expl_z"     value="$(arg max_expl_z)"/>
+        <param name="z_soft_limit"   value="$(arg z_soft_limit)"/>
+        <param name="z_hard_limit"   value="$(arg z_hard_limit)"/>
+        <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+        <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+        <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+        <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+        <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+        <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+        <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+        <param name="crash_z"           value="$(arg crash_z)"/>
+        <param name="crash_hold"        value="$(arg crash_hold)"/>
+        <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+        <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+        <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+        <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+        <param name="search_sweep_deg"       value="$(arg search_sweep_deg)"/>
+        <param name="search_sweep_rate"      value="$(arg search_sweep_rate)"/>
+        <param name="mission_deadline_sec"   value="$(arg mission_deadline_sec)"/>
+        <param name="mission_wait_sec"       value="$(arg mission_wait_sec)"/>
+        <param name="init_x"         value="-14"/>
+        <param name="init_y"         value="3"/>
+    </node>
+
+    <!-- drone 4 (typhoon_h480_3, spawn (-17,-3)) -->
+    <node pkg="fly_px4" type="fly_px4_2" name="fly_px4_2_4" output="screen">
+        <param name="drone_ns"       value="typhoon_h480_3"/>
+        <param name="drone_id"       value="4"/>
+        <param name="drone_num"      value="$(arg drone_num)"/>
+        <param name="min_expl_z"     value="$(arg min_expl_z)"/>
+        <param name="max_expl_z"     value="$(arg max_expl_z)"/>
+        <param name="z_soft_limit"   value="$(arg z_soft_limit)"/>
+        <param name="z_hard_limit"   value="$(arg z_hard_limit)"/>
+        <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+        <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+        <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+        <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+        <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+        <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+        <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+        <param name="crash_z"           value="$(arg crash_z)"/>
+        <param name="crash_hold"        value="$(arg crash_hold)"/>
+        <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+        <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+        <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+        <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+        <param name="search_sweep_deg"       value="$(arg search_sweep_deg)"/>
+        <param name="search_sweep_rate"      value="$(arg search_sweep_rate)"/>
+        <param name="mission_deadline_sec"   value="$(arg mission_deadline_sec)"/>
+        <param name="mission_wait_sec"       value="$(arg mission_wait_sec)"/>
+        <param name="init_x"         value="-17"/>
+        <param name="init_y"         value="-3"/>
+    </node>
+
+    <!-- drone 5 (typhoon_h480_4, spawn (-17,0)) -->
+    <node pkg="fly_px4" type="fly_px4_2" name="fly_px4_2_5" output="screen">
+        <param name="drone_ns"       value="typhoon_h480_4"/>
+        <param name="drone_id"       value="5"/>
+        <param name="drone_num"      value="$(arg drone_num)"/>
+        <param name="min_expl_z"     value="$(arg min_expl_z)"/>
+        <param name="max_expl_z"     value="$(arg max_expl_z)"/>
+        <param name="z_soft_limit"   value="$(arg z_soft_limit)"/>
+        <param name="z_hard_limit"   value="$(arg z_hard_limit)"/>
+        <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+        <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+        <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+        <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+        <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+        <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+        <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+        <param name="crash_z"           value="$(arg crash_z)"/>
+        <param name="crash_hold"        value="$(arg crash_hold)"/>
+        <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+        <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+        <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+        <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+        <param name="search_sweep_deg"       value="$(arg search_sweep_deg)"/>
+        <param name="search_sweep_rate"      value="$(arg search_sweep_rate)"/>
+        <param name="mission_deadline_sec"   value="$(arg mission_deadline_sec)"/>
+        <param name="mission_wait_sec"       value="$(arg mission_wait_sec)"/>
+        <param name="init_x"         value="-17"/>
+        <param name="init_y"         value="0"/>
+    </node>
+
+    <!-- drone 6 (typhoon_h480_5, spawn (-17,3)) -->
+    <node pkg="fly_px4" type="fly_px4_2" name="fly_px4_2_6" output="screen">
+        <param name="drone_ns"       value="typhoon_h480_5"/>
+        <param name="drone_id"       value="6"/>
+        <param name="drone_num"      value="$(arg drone_num)"/>
+        <param name="min_expl_z"     value="$(arg min_expl_z)"/>
+        <param name="max_expl_z"     value="$(arg max_expl_z)"/>
+        <param name="z_soft_limit"   value="$(arg z_soft_limit)"/>
+        <param name="z_hard_limit"   value="$(arg z_hard_limit)"/>
+        <param name="cmd_timeout"       value="$(arg cmd_timeout)"/>
+        <param name="stuck_yaw_sec"     value="$(arg stuck_yaw_sec)"/>
+        <param name="stuck_retreat_sec" value="$(arg stuck_retreat_sec)"/>
+        <param name="retreat_dist"      value="$(arg retreat_dist)"/>
+        <param name="frozen_sec"        value="$(arg frozen_sec)"/>
+        <param name="spin_rate_deg"     value="$(arg spin_rate_deg)"/>
+        <param name="retreat_hold"      value="$(arg retreat_hold)"/>
+        <param name="crash_z"           value="$(arg crash_z)"/>
+        <param name="crash_hold"        value="$(arg crash_hold)"/>
+        <param name="track_yaw_rate_max"     value="$(arg track_yaw_rate_max)"/>
+        <param name="track_yaw_deadband_deg" value="$(arg track_yaw_deadband_deg)"/>
+        <param name="track_lead_sec"         value="$(arg track_lead_sec)"/>
+        <param name="track_stale_sec"        value="$(arg track_stale_sec)"/>
+        <param name="search_sweep_deg"       value="$(arg search_sweep_deg)"/>
+        <param name="search_sweep_rate"      value="$(arg search_sweep_rate)"/>
+        <param name="mission_deadline_sec"   value="$(arg mission_deadline_sec)"/>
+        <param name="mission_wait_sec"       value="$(arg mission_wait_sec)"/>
+        <param name="init_x"         value="-17"/>
+        <param name="init_y"         value="3"/>
+    </node>
+
+</launch>

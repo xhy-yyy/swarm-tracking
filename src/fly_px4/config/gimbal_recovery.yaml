@@ -1,0 +1,33 @@
+# 云台检测与自动恢复总开关；启动时读取，修改后需重启云台检测节点。
+enabled: false                            # true：开启；false：关闭，不订阅 IMU、不发送回中指令
+
+# 相机 IMU 以启动姿态为参考；相机固定下倾 25°，检测时扣除安装角。
+camera_imu_reference: initial               # initial：启动参考系；world：世界参考系
+camera_imu_initial_rpy_deg: [0.0, 25.0, 0.0] # 启动时相机在世界系的横滚、俯仰、偏航（度）
+camera_mount_rpy_deg: [0.0, 25.0, 0.0]       # 相机相对云台的固定横滚、俯仰、偏航安装角（度）
+rate_hz: 5.0                              # 检测频率（Hz）
+
+# 默认只检查持续偏角：任一轴达到阈值并连续保持 3 秒，就允许回中。
+require_stationary: false   # false：只检查持续偏角；true：额外要求机体平稳、云台基本不动
+fault_angle_deg: 20.0        # 云台横滚或俯仰偏离水平的故障判定阈值（度）
+fault_sec: 3.0               # 偏角达到阈值必须连续保持的时间（秒）；跌回阈值内则重新计时
+
+# 以下四项仅在 require_stationary: true 时参与判定，默认不拦截回中。
+stuck_span_deg: 2.0          # 确认期间云台每个轴的角度变化范围上限（度）
+body_tilt_max_deg: 15.0      # 机体横滚和俯仰的绝对值上限（度）
+body_rate_max_deg_s: 20.0    # 机体水平轴角速度的上限（度/秒）
+camera_rate_max_deg_s: 5.0   # 相机水平轴角速度的上限（度/秒）
+
+healthy_angle_deg: 3.0       # 云台两轴偏角均在此范围内，才视为恢复正常（度）
+healthy_sec: 0.7             # 正常角度必须连续保持的时间（秒）
+
+# 两路 IMU 都必须有效且及时；反馈缺失或过期时，不盲目发送回中指令。
+feedback_timeout: 0.3       # IMU 采样时间和实际接收时间的最大有效时长（秒）
+pair_skew_max: 0.15          # 相机与机体 IMU 时间戳的最大允许差（秒）
+future_tolerance: 0.05       # IMU 时间戳允许领先当前 ROS 时间的上限（秒）
+
+# 只在确认持续偏角后回中；每次重试都需要重新确认偏角持续满 fault_sec。
+retry_sec: 1.0              # 两次回中指令的最小间隔（秒）
+max_attempts: 3             # 每次故障最多发送的回中指令总数，包含首次
+recovery_timeout: 6.0       # 从首次回中开始，单次恢复过程的最长等待时间（秒）
+cooldown_sec: 30.0          # 一次恢复结束后的静默观察时间，期间不发回中指令（秒）

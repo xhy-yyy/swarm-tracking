@@ -1,0 +1,520 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 762834e..31a9daa 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -37,7 +37,7 @@ include(GNUInstallDirs)
+ #######################
+ 
+ option(BUILD_GSTREAMER_PLUGIN "enable gstreamer plugin" ON)
+-option(BUILD_ROS_PLUGINS "Enable building ROS dependent plugins" OFF)
++option(BUILD_ROS_PLUGINS "Enable building ROS dependent plugins" ON)
+ option(GENERATE_ROS_MODELS "Generate model sdf for ROS environment" OFF)
+ 
+ option(SEND_VISION_ESTIMATION_DATA "Send Mavlink VISION_POSITION_ESTIMATE msgs" OFF)
+@@ -108,6 +108,7 @@ if (BUILD_ROS_PLUGINS)
+   find_package(geometry_msgs REQUIRED)
+   find_package(roscpp REQUIRED)
+   find_package(sensor_msgs REQUIRED)
++  find_package(std_msgs REQUIRED)
+ endif()
+ 
+ # find MAVLink
+@@ -400,6 +401,7 @@ set(plugins
+   gazebo_parachute_plugin
+   gazebo_airship_dynamics_plugin
+   gazebo_drop_plugin
++  #gazebo_ros_wind_plugin_xtdrone
+   )
+ 
+ foreach(plugin ${plugins})
+@@ -408,7 +410,7 @@ endforeach()
+ target_link_libraries(gazebo_opticalflow_plugin ${OpticalFlow_LIBS})
+ 
+ # If BUILD_ROS_PLUGINS set to ON, build plugins that have ROS dependencies
+-# Current plugins that can be used with ROS interface: gazebo_motor_failure_plugin
++# Current plugins that can be used with ROS interface: gazebo_motor_failure_plugin, gazebo_ros_wind_plugin_xtdrone
+ if (BUILD_ROS_PLUGINS)
+   add_library(gazebo_motor_failure_plugin SHARED src/gazebo_motor_failure_plugin.cpp)
+   target_link_libraries(gazebo_motor_failure_plugin ${GAZEBO_libraries} ${roscpp_LIBRARIES})
+@@ -425,6 +427,23 @@ if (BUILD_ROS_PLUGINS)
+     ${catkin_LIBRARIES}
+     ${roscpp_LIBRARIES}
+     ${GAZEBO_libraries}
++  )
++
++	add_library(gazebo_ros_wind_plugin_xtdrone SHARED src/gazebo_ros_wind_plugin_xtdrone.cpp)
++	target_link_libraries(gazebo_ros_wind_plugin_xtdrone ${GAZEBO_libraries} ${roscpp_LIBRARIES})
++	list(APPEND plugins gazebo_ros_wind_plugin_xtdrone)
++	message(STATUS "adding gazebo_ros_wind_plugin_xtdrone to build")
++	
++	include_directories(
++    include
++    ${std_msgs_INCLUDE_DIRS}
++    ${geometry_msgs_INCLUDE_DIRS}
++  )
++  
++  target_link_libraries(gazebo_ros_wind_plugin_xtdrone
++    ${catkin_LIBRARIES}
++    ${roscpp_LIBRARIES}
++    ${GAZEBO_libraries}
+   )
+ endif()
+ 
+diff --git a/cmake/FindMAVLink.cmake b/cmake/FindMAVLink.cmake
+index ea072b5..d8dcf00 100644
+--- a/cmake/FindMAVLink.cmake
++++ b/cmake/FindMAVLink.cmake
+@@ -66,6 +66,12 @@ endif()
+ 
+ # handle arguments
+ set(MAVLINK_INCLUDE_DIRS ${_MAVLINK_INCLUDE_DIR})
++if(EXISTS ${_MAVLINK_INCLUDE_DIR}/mavlink/v2.0)
++    list(APPEND MAVLINK_INCLUDE_DIRS ${_MAVLINK_INCLUDE_DIR}/mavlink/v2.0)
++endif()
++if(EXISTS ${_MAVLINK_INCLUDE_DIR}/mavlink/v1.0)
++    list(APPEND MAVLINK_INCLUDE_DIRS ${_MAVLINK_INCLUDE_DIR}/mavlink/v1.0)
++endif()
+ find_package_handle_standard_args(
+     MAVLink
+     REQUIRED_VARS MAVLINK_INCLUDE_DIRS MAVLINK_VERSION
+diff --git a/include/gazebo_gimbal_controller_plugin.hh b/include/gazebo_gimbal_controller_plugin.hh
+index 390f70c..016f436 100644
+--- a/include/gazebo_gimbal_controller_plugin.hh
++++ b/include/gazebo_gimbal_controller_plugin.hh
+@@ -156,6 +156,9 @@ namespace gazebo
+     private: static constexpr uint8_t ourSysid {1};
+     private: static constexpr uint8_t ourCompid {MAV_COMP_ID_GIMBAL};
+     private: static constexpr uint8_t mavlinkChannel {MAVLINK_COMM_3};
++
++    private: std::string udp_gimbal_host_ip;
++    private: int udp_gimbal_port_remote;
+   };
+ }
+ #endif
+diff --git a/src/gazebo_camera_manager_plugin.cpp b/src/gazebo_camera_manager_plugin.cpp
+index 3acd3b7..93f73a7 100644
+--- a/src/gazebo_camera_manager_plugin.cpp
++++ b/src/gazebo_camera_manager_plugin.cpp
+@@ -585,7 +585,9 @@ void CameraManagerPlugin::_handle_camera_info(const mavlink_message_t *pMsg, str
+         0,                         // lens_id
+         camera_capabilities,       // CAP_FLAGS
+         0,                         // Camera Definition Version
+-        uri                        // URI
++        uri,                       // URI
++        0,                         // gimbal device id
++        0                          // camera device id
+     );
+     _send_mavlink_message(&msg, srcaddr);
+ }
+@@ -612,7 +614,9 @@ void CameraManagerPlugin::_handle_request_camera_settings(const mavlink_message_
+         0,                      // time_boot_ms
+         _mode,                  // Camera Mode
+         1.0E2 * (_zoom - 1.0)/ (_maxZoom - 1.0),                    // Zoom level
+-        NAN);                   // Focus level
++        NAN,                    // Focus level
++        0                       // camera device id
++    );
+     _send_mavlink_message(&msg, srcaddr);
+ }
+ 
+@@ -643,7 +647,8 @@ void CameraManagerPlugin::_handle_request_video_stream_status(const mavlink_mess
+         _height,                                                // Vertical resolution
+         2048,                                                   // Bit rate (made up)
+         0,                                                      // Rotation (none)
+-        90                                                      // FOV (made up)
++        90,                                                     // FOV (made up)
++        0                                                       // camera device id
+     );
+     _send_mavlink_message(&msg, srcaddr);
+ }
+@@ -682,7 +687,9 @@ void CameraManagerPlugin::_handle_request_video_stream_information(const mavlink
+         0,                                          // Rotation (none)
+         90,                                         // FOV (made up)
+         name,
+-        _videoURI.c_str()
++        _videoURI.c_str(),
++        0,                                          // Encoding
++        0                                           // camera device id
+     );
+     _send_mavlink_message(&msg, srcaddr);
+ }
+@@ -746,7 +753,9 @@ void CameraManagerPlugin::_send_capture_status(struct sockaddr* srcaddr)
+         interval,                               // image interval
+         0,                                      // recording time in ms
+         available_mib,                          // available storage capacity
+-        _imageCounter);                         // total number of images
++        _imageCounter,                          // total number of images
++        0                                       // camera device id
++    );
+     _send_mavlink_message(&msg, srcaddr);
+ }
+ 
+diff --git a/src/gazebo_gimbal_controller_plugin.cpp b/src/gazebo_gimbal_controller_plugin.cpp
+index 7d6b1b8..68383c0 100644
+--- a/src/gazebo_gimbal_controller_plugin.cpp
++++ b/src/gazebo_gimbal_controller_plugin.cpp
+@@ -323,6 +323,17 @@ void GimbalControllerPlugin::Load(physics::ModelPtr _model,
+       gzwarn << "joint_pitch [" << pitchJointName << "] does not exist?\n";
+     }
+   }
++
++  // gimbal control port
++  if (this->sdf->HasElement("udp_gimbal_port_remote")) {
++    this->udp_gimbal_port_remote = _sdf->Get<int>("udp_gimbal_port_remote");
++  } else {
++    this->udp_gimbal_port_remote = 13030;
++    gzwarn << "Gimbal default param." << std::endl;
++  }
++  gzwarn << "[gazebo_gimbal_controller_plugin] Streaming gimbal mavlink stream to ip: " << this->udp_gimbal_host_ip  << " port: " << this->udp_gimbal_port_remote << std::endl;
++
++
+   if (!this->pitchJoint)
+   {
+     gzerr << "GimbalControllerPlugin::Load ERROR! Can't get pitch joint '"
+@@ -647,6 +658,10 @@ void GimbalControllerPlugin::SendGimbalDeviceInformation()
+   const float yawMax = this->yawJoint->LowerLimit(0);
+   const float yawMin = this->yawJoint->UpperLimit(0);
+ 
++  // MAVLink copies each fixed-width name as 32 bytes, including padding.
++  const char vendorName[32] = "PX4";
++  const char modelName[32] = "Gazebo SITL";
++  const char customName[32] = "";
+   mavlink_message_t msg;
+   mavlink_msg_gimbal_device_information_pack_chan(
+     ourSysid,
+@@ -654,9 +669,9 @@ void GimbalControllerPlugin::SendGimbalDeviceInformation()
+     mavlinkChannel,
+     &msg,
+     timeMs,
+-    "PX4",
+-    "Gazebo SITL",
+-    "", // custom_name
++    vendorName,
++    modelName,
++    customName,
+     firmwareVersion,
+     hardwareVersion,
+     uid,
+@@ -667,7 +682,11 @@ void GimbalControllerPlugin::SendGimbalDeviceInformation()
+     pitchMin,
+     pitchMax,
+     yawMin,
+-    yawMax);
++    yawMax
++#if MAVLINK_MSG_ID_GIMBAL_DEVICE_INFORMATION_LEN > 144
++    , 0 // gimbal device id (newer MAVLink extension)
++#endif
++    );
+   SendMavlinkMessage(msg);
+ }
+ 
+@@ -719,7 +738,15 @@ void GimbalControllerPlugin::SendGimbalDeviceAttitudeStatus()
+     angularVelocity.X(),
+     angularVelocity.Y(),
+     angularVelocity.Z(),
+-    failureFlags);
++    failureFlags
++#if MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS_LEN >= 48
++    , 0.0f // delta_yaw
++    , 0.0f // delta_yaw_velocity
++#endif
++#if MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS_LEN >= 49
++    , 0 // gimbal device id
++#endif
++    );
+   SendMavlinkMessage(msg);
+ }
+ 
+@@ -748,7 +775,8 @@ void GimbalControllerPlugin::SendMavlinkMessage(const mavlink_message_t &msg)
+   sockaddr_in dest_addr {};
+   dest_addr.sin_family = AF_INET;
+   inet_pton(AF_INET, "127.0.0.1", &dest_addr.sin_addr.s_addr);
+-  dest_addr.sin_port = htons(13030);
++  // dest_addr.sin_port = htons(13030);
++  dest_addr.sin_port = htons(this->udp_gimbal_port_remote);
+ 
+   const ssize_t len = sendto(this->sock, buffer, packetlen, 0, reinterpret_cast<sockaddr *>(&dest_addr), sizeof(dest_addr));
+   if (len <= 0) {
+@@ -852,9 +880,18 @@ void GimbalControllerPlugin::HandleAutopilotStateForGimbalDevice(const mavlink_m
+   mavlink_autopilot_state_for_gimbal_device_t autopilot_state;
+   mavlink_msg_autopilot_state_for_gimbal_device_decode(&msg, &autopilot_state);
+ 
++  double qnorm_sq = 0.0;
++  for (unsigned index = 0; index < 4; ++index) {
++    const double component = autopilot_state.q[index];
++    if (!std::isfinite(component)) return;
++    qnorm_sq += component * component;
++  }
++  if (qnorm_sq < 1e-12) return;
++
+   float rollRad, pitchRad, yawRad;
+   mavlink_quaternion_to_euler(&autopilot_state.q[0], &rollRad, &pitchRad, &yawRad);
+ 
++  const std::lock_guard<std::mutex> lock(cmd_mutex);
+   this->vehicleYawRad = -yawRad + M_PI/2.0; // Convert from NED to ENU.
+ }
+ 
+diff --git a/include/gazebo_ros_wind_plugin_xtdrone.h b/include/gazebo_ros_wind_plugin_xtdrone.h
+new file mode 100644
+index 0000000..c0b3194
+--- /dev/null
++++ b/include/gazebo_ros_wind_plugin_xtdrone.h
+@@ -0,0 +1,104 @@
++#ifndef GAZEBO_ROS_WIND_PLUGIN_XTDRONE_H
++#define GAZEBO_ROS_WIND_PLUGIN_XTDRONE_H
++
++// Gazebo
++#include <gazebo/common/common.hh>
++#include <gazebo/common/Plugin.hh>
++#include <gazebo/gazebo.hh>
++#include <gazebo/physics/physics.hh>
++
++#include <sdf/Param.hh>
++
++#include "Wind.pb.h"
++
++#include "ros/ros.h"
++#include "std_msgs/String.h"
++#include <geometry_msgs/Twist.h>
++
++// Custom Callback Queue
++#include <ros/callback_queue.h>
++#include <ros/advertise_options.h>
++
++// Boost
++#include <boost/thread.hpp>
++#include <boost/bind.hpp>
++
++
++
++
++namespace gazebo {
++
++/// \brief This gazebo plugin simulates wind acting on a model based on ROS message
++class GazeboROSWindPluginXTDrone : public WorldPlugin {
++ public:
++  GazeboROSWindPluginXTDrone()
++   : WorldPlugin(),
++   namespace_(""),
++   wind_pub_topic_("world_wind"),
++   wind_ros_sub_topic_("wind_xtdrone"),
++   frame_id_("world"),
++   pub_interval_(0.5),
++   gazebo_node_(NULL) {}
++
++  virtual ~GazeboROSWindPluginXTDrone();
++
++ protected:
++  /// \brief Load the plugin.
++  /// \param[in] _model Pointer to the model that loaded this plugin.
++  /// \param[in] _sdf SDF element that describes the plugin.
++  void Load(physics::WorldPtr world, sdf::ElementPtr sdf);
++
++  /// \brief Called when the world is updated.
++  /// \param[in] _info Update timing information.
++  void OnUpdate(const common::UpdateInfo& /*_info*/);
++
++
++private:
++ /// \brief Pointer to the update event connection.
++ event::ConnectionPtr update_connection_;
++
++ physics::WorldPtr world_;
++
++ std::string namespace_;
++
++ std::string frame_id_;
++ std::string wind_pub_topic_;
++ std::string wind_ros_sub_topic_;
++
++ double pub_interval_;
++
++ // wind stuff
++ void windCallback(const geometry_msgs::Twist::ConstPtr& wind_msg);
++ double wind_x;
++ double wind_y;
++ double wind_z;
++ bool alive_;
++
++ boost::mutex lock;
++
++ common::Time last_time_;
++
++ transport::NodePtr gazebo_node_;
++ transport::PublisherPtr wind_pub_;
++ physics_msgs::msgs::Wind wind_msg;
++
++//  ros::NodeHandle *rosnode_;
++boost::shared_ptr<ros::NodeHandle> rosnode_;
++ ros::Subscriber wind_sub_;
++
++ /// \brief Custom Callback Queue
++ ros::CallbackQueue queue_;
++ boost::thread callback_queue_thread_;
++
++/// \brief Custom Callback Queue thread
++ boost::thread callbackQueueThread_;
++
++ /// \brief Queu to handle callbacks.
++ void QueueThread();
++};
++}
++
++
++
++
++#endif
+diff --git a/src/gazebo_ros_wind_plugin_xtdrone.cpp b/src/gazebo_ros_wind_plugin_xtdrone.cpp
+new file mode 100644
+index 0000000..e04b5aa
+--- /dev/null
++++ b/src/gazebo_ros_wind_plugin_xtdrone.cpp
+@@ -0,0 +1,148 @@
++/*
++ * Change the wind through ROS message
++ * Andy Zhuo, XTDrone
++ * 2023.06.30
++*/
++
++#include <sdf/sdf.hh>
++#include <sdf/Param.hh>
++#include "gazebo_ros_wind_plugin_xtdrone.h"
++#include "gazebo/common/common.hh"
++
++namespace gazebo {
++
++GazeboROSWindPluginXTDrone::~GazeboROSWindPluginXTDrone() {
++  queue_.clear();
++  queue_.disable();
++  rosnode_->shutdown();
++  callbackQueueThread_.join();
++
++  update_connection_->~Connection();
++}
++
++void GazeboROSWindPluginXTDrone::Load(gazebo::physics::WorldPtr world, sdf::ElementPtr sdf) {
++  world_ = world;
++
++  if (!sdf->HasElement("robotNamespace")) {
++    ROS_INFO_NAMED("wind_xtdrone", "wind plugin missing <robotNamespace>, defaults to %s", namespace_.c_str());
++  }
++  else{
++    namespace_ = sdf->Get<std::string>("robotNamespace");
++  }
++
++  if (!sdf->HasElement("frameId")){
++    ROS_INFO_NAMED("wind_xtdrone", "wind plugin missing <frameId>, defaults to %s", frame_id_.c_str());
++  }
++  else{
++    frame_id_ = sdf->Get<std::string>("frameId");
++  }
++
++  if (!sdf->HasElement("windPubTopic")){
++    ROS_INFO_NAMED("wind_xtdrone", "wind plugin missing <windPubTopic>, defaults to %s", wind_pub_topic_.c_str());
++  }
++  else{
++    wind_pub_topic_ = sdf->Get<std::string>("windPubTopic");
++  }
++
++  double pub_rate = 2.0;
++  if (!sdf->HasElement("publishRate")){
++    ROS_INFO_NAMED("wind_xtdrone", "wind plugin missing <publishRate>, defaults to %f", pub_rate);
++  }
++  else{
++    pub_rate = sdf->Get<double>("publishRate");
++  }
++  pub_interval_ = (pub_rate > 0.0) ? 1/pub_rate : 0.0;
++
++  wind_x = 0;
++  wind_y = 0;
++  wind_z = 0;
++
++
++  /* Gazebo Node */
++  gazebo_node_ = transport::NodePtr(new transport::Node());
++  gazebo_node_->Init(namespace_);
++
++  wind_pub_ = gazebo_node_->Advertise<physics_msgs::msgs::Wind>("~/" + wind_pub_topic_, 10);
++
++  // Make sure the ROS node for Gazebo has already been initialized
++  if (!ros::isInitialized())
++  {
++    ROS_FATAL_STREAM_NAMED("imu", "A ROS node for Gazebo has not been initialized, unable to load plugin. "
++      << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
++    return;
++  }
++
++  /* ROS Node */
++  rosnode_.reset(new ros::NodeHandle(namespace_));
++  // ROS: Subscribe to the wind command topic (usually "wind_xtdrone")
++  ROS_INFO_NAMED("wind_xtdrone", "XTdrone wind plugin try to subscribe to ROS topic: %s", wind_ros_sub_topic_.c_str());
++  ros::SubscribeOptions so =
++      ros::SubscribeOptions::create<geometry_msgs::Twist>(wind_ros_sub_topic_, 1,
++              boost::bind(&GazeboROSWindPluginXTDrone::windCallback, this, _1),
++              ros::VoidPtr(), &queue_);
++  wind_sub_ = rosnode_->subscribe(so);
++
++  // start custom queue for diff drive
++  this->callback_queue_thread_ =
++      boost::thread ( boost::bind ( &GazeboROSWindPluginXTDrone::QueueThread, this ) );
++
++  // Listen to the update event. This event is broadcast every
++  // simulation iteration.
++  update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboROSWindPluginXTDrone::OnUpdate, this, _1));
++
++#if GAZEBO_MAJOR_VERSION >= 9
++  last_time_ = world_->SimTime();
++#else
++  last_time_ = world_->GetSimTime();
++#endif
++}
++
++// This gets called by the world update start event.
++void GazeboROSWindPluginXTDrone::OnUpdate(const common::UpdateInfo& _info) {
++  // Get the current simulation time.
++#if GAZEBO_MAJOR_VERSION >= 9
++  common::Time now = world_->SimTime();
++#else
++  common::Time now = world_->GetSimTime();
++#endif
++  if ((now - last_time_).Double() < pub_interval_ || pub_interval_ == 0.0) {
++    return;
++  }
++  last_time_ = now;
++
++  /* processing */
++  gazebo::msgs::Vector3d* wind_v = new gazebo::msgs::Vector3d();
++  wind_v->set_x(wind_x);
++  wind_v->set_y(wind_y);
++  wind_v->set_z(wind_z);
++
++  // ROS_WARN("wind-pub: [%f, %f, %f]", wind_x, wind_y, wind_z);
++
++  wind_msg.set_frame_id(frame_id_);
++  wind_msg.set_time_usec(now.Double() * 1e6);
++  wind_msg.set_allocated_velocity(wind_v);
++
++  wind_pub_->Publish(wind_msg);
++}
++
++void GazeboROSWindPluginXTDrone::windCallback(const geometry_msgs::Twist::ConstPtr& wind_msg)
++{
++  // boost::mutex::scoped_lock scoped_lock ( lock );
++  wind_x = wind_msg->linear.x;
++  wind_y = wind_msg->linear.y;
++  wind_z = wind_msg->linear.z;
++
++  // ROS_WARN("wind-sub: [%f, %f, %f]", wind_x, wind_y, wind_z);
++}
++
++void GazeboROSWindPluginXTDrone::QueueThread()
++{
++  static const double timeout = 0.01;
++
++  while (this->rosnode_->ok())
++    this->queue_.callAvailable(ros::WallDuration(timeout));
++}
++
++
++GZ_REGISTER_WORLD_PLUGIN(GazeboROSWindPluginXTDrone);
++}

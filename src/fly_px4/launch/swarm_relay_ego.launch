@@ -1,0 +1,221 @@
+<launch>
+  <arg name="start_positions_file" default="$(find fly_px4)/config/start_positions.yaml"/>
+  <!-- 起点与水平尺度和控制器保持一致；改配置后一起重启两个 launch。 -->
+  <rosparam file="$(find fly_px4)/config/world_frame.yaml" command="load"/>
+  <!-- 启动六机世界帧桥接、二维 EGO 和 traj_server；就绪后再启动跟踪与主控。
+       仅 source catkin_ws，避免 racer_ws 同名包和共享库冲突。 -->
+
+  <!-- 巡航高度与薄片 -->
+  <!-- 地图外视为占据；薄片需覆盖规划平面和传感器位置。 -->
+  <!-- plane_mode 固定规划高度；地图薄片仍须覆盖巡航/跟踪时的光心和雷达扫描面，否则更新失效。 -->
+  <arg name="slab_bottom" default="2.2"/>   <!-- grid_map/ground_height -->
+  <arg name="slab_thick"  default="3.0"/>   <!-- grid_map/map_size_z, 薄片 z∈[2.2,5.2] -->
+
+  <!-- 地图必须盖住全城 (x 到 127, y 到 ±49), 地图外=占据, 小了会让边界规划直接失败 -->
+  <arg name="map_size_x" default="360"/>    <!-- x ∈ [-150, 150] -->
+  <arg name="map_size_y" default="120"/>    <!-- y ∈ [ -60,  60] -->
+  <arg name="resolution" default="0.1"/>   <!-- 薄片后总体素 1200x480x6 ≈ 3.5M, 单机约 50MB -->
+
+  <!-- 运动学限值 -->
+  <!-- 巡航 12 m/s, 刹车距离 v^2/2a = 9 m。跟踪时 fly_px4_1 会通过
+       /ego_speed_N 把它压到 0.9~1.8 m/s (锁定期必须 <1 m/s, 否则行人逃跑)。 -->
+  <arg name="max_vel" default="12.0"/>
+  <arg name="max_acc" default="8.0"/>
+  <!-- planning_horizon 必须远大于刹车距离 9m, 否则每 7.5m 就减速一次跑不到 12 -->
+  <arg name="planning_horizon" default="25.0"/>
+  <!-- 二维雷达 (hokuyo) 最大 20m. 12 m/s 时刹车距离 v^2/2a = 9m, 20m 视距
+       余量充足; emergency_time=1.0 => 1s(12m) 内有碰撞风险就急停, 只作兜底. -->
+  <arg name="sensor_range" default="20.0"/>
+  
+  <arg name="lidar_skip"   default="1"/>   <!-- 点云角向下采样: 每 N 条光束留 1 条 (1=全密度) -->
+
+  <!-- cam_pitch_deg 须与模型 realsense 安装 pitch 一致，视觉直接使用 pose_relay。 -->
+  <arg name="cam_pitch_deg" default="25.0"/>
+
+  <arg name="depth_topic" default="realsense/depth_camera/depth/image_raw"/>
+
+  <!-- plane_z 是六机共享的虚拟规划平面，须与雷达投影一致。
+       实际巡航/跟踪高度由主控 Z 参考决定。 -->
+  <arg name="plane_mode" default="true"/>
+  <arg name="plane_z"    default="4.5"/>
+
+  <!-- 障碍膨胀与轨迹优化参数 (B样条代价) -->
+  <!-- 障碍点在地图中的水平膨胀距离 [m]，为机体尺寸和跟踪误差留余量。
+       增大可扩大规划禁入区，但可能封住窄通道；减小可通过更窄的通道，但更容易贴墙。 -->
+  <arg name="inflation"    default="1.0"/>
+
+  <!-- 平滑代价权重，惩罚控制点的三阶差分。
+       增大使轨迹变化更平缓，但可能削弱转弯避障；减小允许更灵活转弯，过小可能不平顺。 -->
+  <arg name="lambda_smooth"    default="1.0"/>
+
+  <!-- 障碍和机间避障代价的基础权重，本实现也将其用于终点代价。
+       增大更重视避障余量，但可能增加绕行或转折；减小更容易贴近障碍。 -->
+  <arg name="lambda_collision" default="4.0"/>
+
+  <!-- 已建立避障约束下，相对膨胀障碍的期望额外间距 [m]，属于软约束。
+       增大倾向于离障碍更远，但可能绕路或难过窄道；减小更易贴墙，不保证实际最小间距。 -->
+  <arg name="dist0"            default="2.0"/>
+
+  <!-- 深度相机 + 雷达高度记忆加入避障 (只在跟踪/跟踪后归航时工作, 巡逻不变);
+       body_band:=false 回到只用二维雷达, 便于 A/B 对比 -->
+  <arg name="body_band"        default="true"/>
+
+  <!-- 六机展开：xtdrone_idx = drone_id - 1，话题命名空间从 0 开始，机号从 1 开始。 -->
+
+  <!-- 1 号机 -->
+  <include file="$(find fly_px4)/launch/single_relay_ego.launch">
+    <arg name="drone_id"     value="1"/>
+    <arg name="xtdrone_idx"  value="0"/>
+    <arg name="start_positions_file" value="$(arg start_positions_file)"/>
+    <arg name="slab_bottom"  value="$(arg slab_bottom)"/>
+    <arg name="slab_thick"   value="$(arg slab_thick)"/>
+    <arg name="map_size_x"   value="$(arg map_size_x)"/>
+    <arg name="map_size_y"   value="$(arg map_size_y)"/>
+    <arg name="resolution"   value="$(arg resolution)"/>
+    <arg name="max_vel"      value="$(arg max_vel)"/>
+    <arg name="max_acc"      value="$(arg max_acc)"/>
+    <arg name="planning_horizon" value="$(arg planning_horizon)"/>
+    <arg name="sensor_range" value="$(arg sensor_range)"/>
+    <arg name="inflation"    value="$(arg inflation)"/>
+    <arg name="lidar_skip"   value="$(arg lidar_skip)"/>
+    <arg name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+    <arg name="depth_topic"  value="$(arg depth_topic)"/>
+    <arg name="plane_mode"   value="$(arg plane_mode)"/>
+    <arg name="plane_z"      value="$(arg plane_z)"/>
+    <arg name="lambda_smooth"    value="$(arg lambda_smooth)"/>
+    <arg name="lambda_collision" value="$(arg lambda_collision)"/>
+    <arg name="dist0"            value="$(arg dist0)"/>
+    <arg name="body_band"        value="$(arg body_band)"/>
+  </include>
+
+  <!-- 2 号机 -->
+  <include file="$(find fly_px4)/launch/single_relay_ego.launch">
+    <arg name="drone_id"     value="2"/>
+    <arg name="xtdrone_idx"  value="1"/>
+    <arg name="start_positions_file" value="$(arg start_positions_file)"/>
+    <arg name="slab_bottom"  value="$(arg slab_bottom)"/>
+    <arg name="slab_thick"   value="$(arg slab_thick)"/>
+    <arg name="map_size_x"   value="$(arg map_size_x)"/>
+    <arg name="map_size_y"   value="$(arg map_size_y)"/>
+    <arg name="resolution"   value="$(arg resolution)"/>
+    <arg name="max_vel"      value="$(arg max_vel)"/>
+    <arg name="max_acc"      value="$(arg max_acc)"/>
+    <arg name="planning_horizon" value="$(arg planning_horizon)"/>
+    <arg name="sensor_range" value="$(arg sensor_range)"/>
+    <arg name="inflation"    value="$(arg inflation)"/>
+    <arg name="lidar_skip"   value="$(arg lidar_skip)"/>
+    <arg name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+    <arg name="depth_topic"  value="$(arg depth_topic)"/>
+    <arg name="plane_mode"   value="$(arg plane_mode)"/>
+    <arg name="plane_z"      value="$(arg plane_z)"/>
+    <arg name="lambda_smooth"    value="$(arg lambda_smooth)"/>
+    <arg name="lambda_collision" value="$(arg lambda_collision)"/>
+    <arg name="dist0"            value="$(arg dist0)"/>
+    <arg name="body_band"        value="$(arg body_band)"/>
+  </include>
+
+  <!-- 3 号机 -->
+  <include file="$(find fly_px4)/launch/single_relay_ego.launch">
+    <arg name="drone_id"     value="3"/>
+    <arg name="xtdrone_idx"  value="2"/>
+    <arg name="start_positions_file" value="$(arg start_positions_file)"/>
+    <arg name="slab_bottom"  value="$(arg slab_bottom)"/>
+    <arg name="slab_thick"   value="$(arg slab_thick)"/>
+    <arg name="map_size_x"   value="$(arg map_size_x)"/>
+    <arg name="map_size_y"   value="$(arg map_size_y)"/>
+    <arg name="resolution"   value="$(arg resolution)"/>
+    <arg name="max_vel"      value="$(arg max_vel)"/>
+    <arg name="max_acc"      value="$(arg max_acc)"/>
+    <arg name="planning_horizon" value="$(arg planning_horizon)"/>
+    <arg name="sensor_range" value="$(arg sensor_range)"/>
+    <arg name="inflation"    value="$(arg inflation)"/>
+    <arg name="lidar_skip"   value="$(arg lidar_skip)"/>
+    <arg name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+    <arg name="depth_topic"  value="$(arg depth_topic)"/>
+    <arg name="plane_mode"   value="$(arg plane_mode)"/>
+    <arg name="plane_z"      value="$(arg plane_z)"/>
+    <arg name="lambda_smooth"    value="$(arg lambda_smooth)"/>
+    <arg name="lambda_collision" value="$(arg lambda_collision)"/>
+    <arg name="dist0"            value="$(arg dist0)"/>
+    <arg name="body_band"        value="$(arg body_band)"/>
+  </include>
+
+  <!-- 4 号机 -->
+  <include file="$(find fly_px4)/launch/single_relay_ego.launch">
+    <arg name="drone_id"     value="4"/>
+    <arg name="xtdrone_idx"  value="3"/>
+    <arg name="start_positions_file" value="$(arg start_positions_file)"/>
+    <arg name="slab_bottom"  value="$(arg slab_bottom)"/>
+    <arg name="slab_thick"   value="$(arg slab_thick)"/>
+    <arg name="map_size_x"   value="$(arg map_size_x)"/>
+    <arg name="map_size_y"   value="$(arg map_size_y)"/>
+    <arg name="resolution"   value="$(arg resolution)"/>
+    <arg name="max_vel"      value="$(arg max_vel)"/>
+    <arg name="max_acc"      value="$(arg max_acc)"/>
+    <arg name="planning_horizon" value="$(arg planning_horizon)"/>
+    <arg name="sensor_range" value="$(arg sensor_range)"/>
+    <arg name="inflation"    value="$(arg inflation)"/>
+    <arg name="lidar_skip"   value="$(arg lidar_skip)"/>
+    <arg name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+    <arg name="depth_topic"  value="$(arg depth_topic)"/>
+    <arg name="plane_mode"   value="$(arg plane_mode)"/>
+    <arg name="plane_z"      value="$(arg plane_z)"/>
+    <arg name="lambda_smooth"    value="$(arg lambda_smooth)"/>
+    <arg name="lambda_collision" value="$(arg lambda_collision)"/>
+    <arg name="dist0"            value="$(arg dist0)"/>
+    <arg name="body_band"        value="$(arg body_band)"/>
+  </include>
+
+  <!-- 5 号机 -->
+  <include file="$(find fly_px4)/launch/single_relay_ego.launch">
+    <arg name="drone_id"     value="5"/>
+    <arg name="xtdrone_idx"  value="4"/>
+    <arg name="start_positions_file" value="$(arg start_positions_file)"/>
+    <arg name="slab_bottom"  value="$(arg slab_bottom)"/>
+    <arg name="slab_thick"   value="$(arg slab_thick)"/>
+    <arg name="map_size_x"   value="$(arg map_size_x)"/>
+    <arg name="map_size_y"   value="$(arg map_size_y)"/>
+    <arg name="resolution"   value="$(arg resolution)"/>
+    <arg name="max_vel"      value="$(arg max_vel)"/>
+    <arg name="max_acc"      value="$(arg max_acc)"/>
+    <arg name="planning_horizon" value="$(arg planning_horizon)"/>
+    <arg name="sensor_range" value="$(arg sensor_range)"/>
+    <arg name="inflation"    value="$(arg inflation)"/>
+    <arg name="lidar_skip"   value="$(arg lidar_skip)"/>
+    <arg name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+    <arg name="depth_topic"  value="$(arg depth_topic)"/>
+    <arg name="plane_mode"   value="$(arg plane_mode)"/>
+    <arg name="plane_z"      value="$(arg plane_z)"/>
+    <arg name="lambda_smooth"    value="$(arg lambda_smooth)"/>
+    <arg name="lambda_collision" value="$(arg lambda_collision)"/>
+    <arg name="dist0"            value="$(arg dist0)"/>
+    <arg name="body_band"        value="$(arg body_band)"/>
+  </include>
+
+  <!-- 6 号机 -->
+  <include file="$(find fly_px4)/launch/single_relay_ego.launch">
+    <arg name="drone_id"     value="6"/>
+    <arg name="xtdrone_idx"  value="5"/>
+    <arg name="start_positions_file" value="$(arg start_positions_file)"/>
+    <arg name="slab_bottom"  value="$(arg slab_bottom)"/>
+    <arg name="slab_thick"   value="$(arg slab_thick)"/>
+    <arg name="map_size_x"   value="$(arg map_size_x)"/>
+    <arg name="map_size_y"   value="$(arg map_size_y)"/>
+    <arg name="resolution"   value="$(arg resolution)"/>
+    <arg name="max_vel"      value="$(arg max_vel)"/>
+    <arg name="max_acc"      value="$(arg max_acc)"/>
+    <arg name="planning_horizon" value="$(arg planning_horizon)"/>
+    <arg name="sensor_range" value="$(arg sensor_range)"/>
+    <arg name="inflation"    value="$(arg inflation)"/>
+    <arg name="lidar_skip"   value="$(arg lidar_skip)"/>
+    <arg name="cam_pitch_deg" value="$(arg cam_pitch_deg)"/>
+    <arg name="depth_topic"  value="$(arg depth_topic)"/>
+    <arg name="plane_mode"   value="$(arg plane_mode)"/>
+    <arg name="plane_z"      value="$(arg plane_z)"/>
+    <arg name="lambda_smooth"    value="$(arg lambda_smooth)"/>
+    <arg name="lambda_collision" value="$(arg lambda_collision)"/>
+    <arg name="dist0"            value="$(arg dist0)"/>
+    <arg name="body_band"        value="$(arg body_band)"/>
+  </include>
+
+</launch>

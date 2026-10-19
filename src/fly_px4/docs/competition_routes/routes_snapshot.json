@@ -1,0 +1,702 @@
+{
+  "route_directory": "patrol_maps_2",
+  "start_positions": {
+    "drone_1": [
+      -14.0,
+      -3.0
+    ],
+    "drone_2": [
+      -14.0,
+      0.0
+    ],
+    "drone_3": [
+      -14.0,
+      3.0
+    ],
+    "drone_4": [
+      -17.0,
+      -3.0
+    ],
+    "drone_5": [
+      -17.0,
+      0.0
+    ],
+    "drone_6": [
+      -17.0,
+      3.0
+    ]
+  },
+  "maps": {
+    "competition_base1": {
+      "route_file": "src/fly_px4/config/patrol_maps_2/competition_base1.yaml",
+      "route_sha256": "4210927228051c46a45a05471a2eba7707594412ee446b83ac6aad3a250a88b2",
+      "world_file": "src/swarm_simulation/worlds/competition/base1.world",
+      "world_sha256": "e4ed54493d713cc3c995308c5666aae4f4b99047abcdfd54702a17d2e9152afd",
+      "patrol": {
+        "defaults": {
+          "cruise_speed": 12.0,
+          "cruise_accel": 8.0,
+          "entry_speed": 12.0,
+          "entry_accel": 8.0,
+          "return_speed": 8.0,
+          "return_accel": 5.0,
+          "track_speed_far": 8.0,
+          "track_acc_far": 5.0,
+          "track_speed_near": 6.0,
+          "track_acc_near": 4.0,
+          "track_speed_creep": 2.0,
+          "track_acc_creep": 1.0,
+          "track_follow_margin": 0.35,
+          "track_follow_floor": 1.0,
+          "track_follow_gap": 3.0,
+          "track_cap_slew_up": 2.0,
+          "track_cap_slew_down": 0.6,
+          "track_acc_soft": 0.8,
+          "track_near_dist": 20.0,
+          "track_far_dist": 30.0,
+          "track_creep_in": 9.0,
+          "track_creep_out": 11.0,
+          "track_far_goal_dist": 22.0,
+          "track_z": 3.2,
+          "standoff_radius": 5.5,
+          "standoff_lead_sec": 0.0,
+          "standoff_lead_max": 1.5,
+          "standoff_lead_tau": 0.3,
+          "standoff_retreat_dist": 4.0,
+          "standoff_move_thresh": 0.25,
+          "standoff_min_interval": 0.3,
+          "standoff_force_dist": 2.5,
+          "track_vel_loop_enable": true,
+          "track_vel_loop_kp": 0.5,
+          "track_vel_loop_ki": 0.0,
+          "track_vel_loop_kd": 0.1,
+          "track_vel_loop_err_tau": 0.1,
+          "track_vel_loop_ff_dead": 0.35,
+          "track_vel_loop_acc_max": 2.5,
+          "track_vel_loop_vmax": 3.0,
+          "track_vel_loop_enter_dist": 9.0,
+          "track_vel_loop_exit_dist": 12.0,
+          "track_vel_loop_enter_err": 3.5,
+          "track_vel_loop_exit_err": 5.0,
+          "track_vel_loop_lookahead": 2.5,
+          "track_vel_loop_clear": 0.55,
+          "track_vel_loop_samples": 7,
+          "track_vel_loop_w_turn": 0.4,
+          "track_avoid_enable": true,
+          "track_avoid_d_hard": 1.0,
+          "track_avoid_d_safe": 2.5,
+          "track_avoid_lag": 0.2,
+          "track_avoid_horizon": 1.2,
+          "track_avoid_brake_acc": 2.0,
+          "track_avoid_memory_sec": 3.0,
+          "track_avoid_block_sec": 0.6,
+          "track_avoid_holdoff_sec": 1.5,
+          "standoff_wall_clear": 2.8,
+          "standoff_los_clear": 0.35,
+          "track_stuck_sec": 4.0,
+          "z": 4.2,
+          "arrive_radius": 1.5,
+          "goal_repub_period": 2.0,
+          "loop": true,
+          "start_delay": 0.0,
+          "yaw_mode": "course",
+          "yaw_offset_deg": 0.0,
+          "patrol_yaw_rate_max": 135.0,
+          "climb_in_place": false
+        },
+        "routes": {
+          "drone_1": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -13.3,
+                "y": -1.7
+              },
+              {
+                "x": 43.785,
+                "y": -1.7
+              },
+              {
+                "x": 35.287,
+                "y": -43.3
+              },
+              {
+                "x": -13.3,
+                "y": -43.3
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_2": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -13.3,
+                "y": 1.7
+              },
+              {
+                "x": -13.3,
+                "y": 43.3
+              },
+              {
+                "x": 52.06,
+                "y": 43.3
+              },
+              {
+                "x": 43.561,
+                "y": 1.7
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_3": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": 47.031,
+                "y": 1.7
+              },
+              {
+                "x": 55.53,
+                "y": 43.3
+              },
+              {
+                "x": 113.0,
+                "y": 43.3
+              },
+              {
+                "x": 113.0,
+                "y": 1.7
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_4": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "entry_waypoints": [],
+            "waypoints": [
+              {
+                "x": -46.7,
+                "y": -0.567
+              },
+              {
+                "x": -46.7,
+                "y": -46.7
+              },
+              {
+                "x": 118.3,
+                "y": -46.7
+              },
+              {
+                "x": 118.3,
+                "y": -0.567
+              }
+            ],
+            "climb_in_place": false
+          },
+          "drone_5": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": 47.255,
+                "y": -1.7
+              },
+              {
+                "x": 113.0,
+                "y": -1.7
+              },
+              {
+                "x": 113.0,
+                "y": -43.3
+              },
+              {
+                "x": 38.757,
+                "y": -43.3
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_6": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -46.7,
+                "y": 0.567
+              },
+              {
+                "x": -46.7,
+                "y": 46.7
+              },
+              {
+                "x": 118.3,
+                "y": 46.7
+              },
+              {
+                "x": 118.3,
+                "y": 0.567
+              }
+            ],
+            "entry_waypoints": []
+          }
+        },
+        "map": "competition_base1"
+      }
+    },
+    "competition_base2": {
+      "route_file": "src/fly_px4/config/patrol_maps_2/competition_base2.yaml",
+      "route_sha256": "935b451ab44aae44c9152a0b0433f6455afd1c24ec090eb2fae00171d7e585d4",
+      "world_file": "src/swarm_simulation/worlds/competition/base2.world",
+      "world_sha256": "f6996cb2b46d74a41bd4ed23ce61fb068ff76b6d978889a4cd924b791d937490",
+      "patrol": {
+        "defaults": {
+          "cruise_speed": 12.0,
+          "cruise_accel": 8.0,
+          "entry_speed": 12.0,
+          "entry_accel": 8.0,
+          "return_speed": 8.0,
+          "return_accel": 5.0,
+          "track_speed_far": 8.0,
+          "track_acc_far": 5.0,
+          "track_speed_near": 6.0,
+          "track_acc_near": 4.0,
+          "track_speed_creep": 2.0,
+          "track_acc_creep": 1.0,
+          "track_follow_margin": 0.35,
+          "track_follow_floor": 1.0,
+          "track_follow_gap": 3.0,
+          "track_cap_slew_up": 2.0,
+          "track_cap_slew_down": 0.6,
+          "track_acc_soft": 0.8,
+          "track_near_dist": 20.0,
+          "track_far_dist": 30.0,
+          "track_creep_in": 9.0,
+          "track_creep_out": 11.0,
+          "track_far_goal_dist": 22.0,
+          "track_z": 3.2,
+          "standoff_radius": 5.5,
+          "standoff_lead_sec": 0.0,
+          "standoff_lead_max": 1.5,
+          "standoff_lead_tau": 0.3,
+          "standoff_retreat_dist": 4.0,
+          "standoff_move_thresh": 0.25,
+          "standoff_min_interval": 0.3,
+          "standoff_force_dist": 2.5,
+          "track_vel_loop_enable": true,
+          "track_vel_loop_kp": 0.5,
+          "track_vel_loop_ki": 0.0,
+          "track_vel_loop_kd": 0.1,
+          "track_vel_loop_err_tau": 0.1,
+          "track_vel_loop_ff_dead": 0.35,
+          "track_vel_loop_acc_max": 2.5,
+          "track_vel_loop_vmax": 3.0,
+          "track_vel_loop_enter_dist": 9.0,
+          "track_vel_loop_exit_dist": 12.0,
+          "track_vel_loop_enter_err": 3.5,
+          "track_vel_loop_exit_err": 5.0,
+          "track_vel_loop_lookahead": 2.5,
+          "track_vel_loop_clear": 0.55,
+          "track_vel_loop_samples": 7,
+          "track_vel_loop_w_turn": 0.4,
+          "track_avoid_enable": true,
+          "track_avoid_d_hard": 1.0,
+          "track_avoid_d_safe": 2.5,
+          "track_avoid_lag": 0.2,
+          "track_avoid_horizon": 1.2,
+          "track_avoid_brake_acc": 2.0,
+          "track_avoid_memory_sec": 3.0,
+          "track_avoid_block_sec": 0.6,
+          "track_avoid_holdoff_sec": 1.5,
+          "standoff_wall_clear": 2.8,
+          "standoff_los_clear": 0.35,
+          "track_stuck_sec": 4.0,
+          "z": 4.2,
+          "arrive_radius": 1.5,
+          "goal_repub_period": 2.0,
+          "loop": true,
+          "start_delay": 0.0,
+          "yaw_mode": "course",
+          "yaw_offset_deg": 0.0,
+          "patrol_yaw_rate_max": 135.0,
+          "climb_in_place": false
+        },
+        "routes": {
+          "drone_1": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -13.3,
+                "y": -1.7
+              },
+              {
+                "x": 59.8,
+                "y": -1.7
+              },
+              {
+                "x": 59.8,
+                "y": -43.3
+              },
+              {
+                "x": -13.3,
+                "y": -43.3
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_2": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -13.3,
+                "y": 1.7
+              },
+              {
+                "x": -13.3,
+                "y": 43.3
+              },
+              {
+                "x": 58.3,
+                "y": 43.3
+              },
+              {
+                "x": 58.3,
+                "y": 1.7
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_3": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": 61.7,
+                "y": 1.7
+              },
+              {
+                "x": 61.7,
+                "y": 43.3
+              },
+              {
+                "x": 113.0,
+                "y": 43.3
+              },
+              {
+                "x": 113.0,
+                "y": 1.7
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_4": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "entry_waypoints": [],
+            "waypoints": [
+              {
+                "x": -46.7,
+                "y": -0.567
+              },
+              {
+                "x": -46.7,
+                "y": -46.7
+              },
+              {
+                "x": 118.3,
+                "y": -46.7
+              },
+              {
+                "x": 118.3,
+                "y": -0.567
+              }
+            ],
+            "climb_in_place": false
+          },
+          "drone_5": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": 63.2,
+                "y": -1.7
+              },
+              {
+                "x": 113.0,
+                "y": -1.7
+              },
+              {
+                "x": 113.0,
+                "y": -43.3
+              },
+              {
+                "x": 63.2,
+                "y": -43.3
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_6": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -46.7,
+                "y": 0.567
+              },
+              {
+                "x": -46.7,
+                "y": 46.7
+              },
+              {
+                "x": 118.3,
+                "y": 46.7
+              },
+              {
+                "x": 118.3,
+                "y": 0.567
+              }
+            ],
+            "entry_waypoints": []
+          }
+        },
+        "map": "competition_base2"
+      }
+    },
+    "competition_base3": {
+      "route_file": "src/fly_px4/config/patrol_maps_2/competition_base3.yaml",
+      "route_sha256": "ac37eff3383d0306da49942bdfb0f9f8e7b22532b75bd0450147516ecddc49f5",
+      "world_file": "src/swarm_simulation/worlds/competition/base3.world",
+      "world_sha256": "deb710cb37542a2b1aad7bf76e92471b1cbf9ac753f113b6d1e122e98990520b",
+      "patrol": {
+        "defaults": {
+          "cruise_speed": 12.0,
+          "cruise_accel": 8.0,
+          "entry_speed": 12.0,
+          "entry_accel": 8.0,
+          "return_speed": 8.0,
+          "return_accel": 5.0,
+          "track_speed_far": 8.0,
+          "track_acc_far": 5.0,
+          "track_speed_near": 6.0,
+          "track_acc_near": 4.0,
+          "track_speed_creep": 2.0,
+          "track_acc_creep": 1.0,
+          "track_follow_margin": 0.35,
+          "track_follow_floor": 1.0,
+          "track_follow_gap": 3.0,
+          "track_cap_slew_up": 2.0,
+          "track_cap_slew_down": 0.6,
+          "track_acc_soft": 0.8,
+          "track_near_dist": 20.0,
+          "track_far_dist": 30.0,
+          "track_creep_in": 9.0,
+          "track_creep_out": 11.0,
+          "track_far_goal_dist": 22.0,
+          "track_z": 3.2,
+          "standoff_radius": 5.5,
+          "standoff_lead_sec": 0.0,
+          "standoff_lead_max": 1.5,
+          "standoff_lead_tau": 0.3,
+          "standoff_retreat_dist": 4.0,
+          "standoff_move_thresh": 0.25,
+          "standoff_min_interval": 0.3,
+          "standoff_force_dist": 2.5,
+          "track_vel_loop_enable": true,
+          "track_vel_loop_kp": 0.5,
+          "track_vel_loop_ki": 0.0,
+          "track_vel_loop_kd": 0.1,
+          "track_vel_loop_err_tau": 0.1,
+          "track_vel_loop_ff_dead": 0.35,
+          "track_vel_loop_acc_max": 2.5,
+          "track_vel_loop_vmax": 3.0,
+          "track_vel_loop_enter_dist": 9.0,
+          "track_vel_loop_exit_dist": 12.0,
+          "track_vel_loop_enter_err": 3.5,
+          "track_vel_loop_exit_err": 5.0,
+          "track_vel_loop_lookahead": 2.5,
+          "track_vel_loop_clear": 0.55,
+          "track_vel_loop_samples": 7,
+          "track_vel_loop_w_turn": 0.4,
+          "track_avoid_enable": true,
+          "track_avoid_d_hard": 1.0,
+          "track_avoid_d_safe": 2.5,
+          "track_avoid_lag": 0.2,
+          "track_avoid_horizon": 1.2,
+          "track_avoid_brake_acc": 2.0,
+          "track_avoid_memory_sec": 3.0,
+          "track_avoid_block_sec": 0.6,
+          "track_avoid_holdoff_sec": 1.5,
+          "standoff_wall_clear": 2.8,
+          "standoff_los_clear": 0.35,
+          "track_stuck_sec": 4.0,
+          "z": 4.2,
+          "arrive_radius": 1.5,
+          "goal_repub_period": 2.0,
+          "loop": true,
+          "start_delay": 0.0,
+          "yaw_mode": "course",
+          "yaw_offset_deg": 0.0,
+          "patrol_yaw_rate_max": 135.0,
+          "climb_in_place": false
+        },
+        "routes": {
+          "drone_1": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -13.3,
+                "y": -1.7
+              },
+              {
+                "x": 28.3,
+                "y": -1.7
+              },
+              {
+                "x": 28.3,
+                "y": -43.3
+              },
+              {
+                "x": -13.3,
+                "y": -43.3
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_2": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -13.3,
+                "y": 1.7
+              },
+              {
+                "x": -13.3,
+                "y": 43.3
+              },
+              {
+                "x": 28.8,
+                "y": 43.3
+              },
+              {
+                "x": 28.8,
+                "y": 1.7
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_3": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": 32.2,
+                "y": 1.7
+              },
+              {
+                "x": 32.2,
+                "y": 43.3
+              },
+              {
+                "x": 116.7,
+                "y": 43.3
+              },
+              {
+                "x": 116.7,
+                "y": 1.7
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_4": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "entry_waypoints": [],
+            "waypoints": [
+              {
+                "x": -46.7,
+                "y": -0.567
+              },
+              {
+                "x": -46.7,
+                "y": -46.7
+              },
+              {
+                "x": 118.3,
+                "y": -46.7
+              },
+              {
+                "x": 118.3,
+                "y": -0.567
+              }
+            ],
+            "climb_in_place": false
+          },
+          "drone_5": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": 31.7,
+                "y": -1.7
+              },
+              {
+                "x": 116.7,
+                "y": -1.7
+              },
+              {
+                "x": 116.7,
+                "y": -43.3
+              },
+              {
+                "x": 31.7,
+                "y": -43.3
+              }
+            ],
+            "entry_waypoints": []
+          },
+          "drone_6": {
+            "z": 4.2,
+            "start_delay": 0.0,
+            "waypoints": [
+              {
+                "x": -46.7,
+                "y": 0.567
+              },
+              {
+                "x": -46.7,
+                "y": 46.7
+              },
+              {
+                "x": 118.3,
+                "y": 46.7
+              },
+              {
+                "x": 118.3,
+                "y": 0.567
+              }
+            ],
+            "entry_waypoints": []
+          }
+        },
+        "map": "competition_base3"
+      }
+    }
+  },
+  "config/start_positions.yaml": {
+    "path": "src/fly_px4/config/start_positions.yaml",
+    "sha256": "812a63d7fcd22d5208c98d64773451f95214f4250c62e0ea6c904f9b8b792df1"
+  },
+  "config/patrol_routes.yaml": {
+    "path": "src/fly_px4/config/patrol_routes.yaml",
+    "sha256": "12b8b2115ef5e7234c1aa91228418f0e9c6c552a2729b6fc71cde36aad78d07e"
+  }
+}
