@@ -13,6 +13,14 @@
 </p>
 
 <p align="center">
+  <a href="docs/vision_environment.md"><img src="https://img.shields.io/badge/Python-3.10-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white" alt="Vision Python 3.10"/></a>
+  <a href="docs/vision_environment.md"><img src="https://img.shields.io/badge/PyTorch-2.12.0-EE4C2C?style=flat-square&amp;logo=pytorch&amp;logoColor=white" alt="PyTorch 2.12.0"/></a>
+  <a href="docs/vision_environment.md"><img src="https://img.shields.io/badge/torchvision-0.27.0-EE4C2C?style=flat-square" alt="torchvision 0.27.0"/></a>
+  <a href="docs/vision_environment.md"><img src="https://img.shields.io/badge/YOLO-Ultralytics%208.4.57-111F68?style=flat-square" alt="YOLO via Ultralytics 8.4.57"/></a>
+  <a href="docs/vision_environment.md"><img src="https://img.shields.io/badge/OpenCV-4.13.0.92-5C3EE8?style=flat-square&amp;logo=opencv&amp;logoColor=white" alt="OpenCV Python package 4.13.0.92"/></a>
+</p>
+
+<p align="center">
   <a href="#演示">演示</a> ·
   <a href="#核心能力">核心能力</a> ·
   <a href="#系统架构">系统架构</a> ·
