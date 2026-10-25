@@ -19,3 +19,16 @@ MP4 使用 H.264、`yuv420p` 与 `faststart`，便于常见浏览器播放；GIF
 
 MP4 files use H.264, `yuv420p`, and `faststart` for browser compatibility. GIFs provide animated README previews.
 No interpolation, speed changes, or scene reordering were applied. Original source files were left untouched.
+
+## 完整视频下载 / Full video downloads
+
+| 视频 / Clip | 下载 / Download | 仓库文件页 / File page |
+| --- | --- | --- |
+| 视觉检测与目标跟踪 / Target tracking | [MP4](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/target-tracking.mp4) | [target-tracking.mp4](target-tracking.mp4) |
+| 多机搜索场景俯视 / Overhead search | [MP4](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/swarm-search.mp4) | [swarm-search.mp4](swarm-search.mp4) |
+
+完整视频通过直接文件地址下载，下载后可用本地播放器打开；README 中的 GIF 用于直接预览。
+浏览器是否内联播放 MP4 取决于响应类型和浏览器设置。
+
+Full videos are available through direct file download URLs for local playback; GIFs provide inline previews.
+Inline MP4 playback depends on response headers and browser settings.

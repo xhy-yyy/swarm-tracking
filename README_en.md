@@ -44,8 +44,10 @@ Built on **ROS Noetic, PX4 SITL, Gazebo Classic, and a modified EGO-Swarm planne
 
 | Visual detection and target tracking | Swarm search: overhead view |
 | :---: | :---: |
-| [![Animated target tracking preview](docs/media/target-tracking.gif)](docs/media/target-tracking.mp4?raw=1) | [![Animated overhead search preview](docs/media/swarm-search.gif)](docs/media/swarm-search.mp4?raw=1) |
-| [Watch / download full MP4 · 20 s](docs/media/target-tracking.mp4?raw=1) | [Watch / download full MP4 · 20 s](docs/media/swarm-search.mp4?raw=1) |
+| [![Animated target tracking preview](docs/media/target-tracking.gif)](docs/media/target-tracking.mp4) | [![Animated overhead search preview](docs/media/swarm-search.gif)](docs/media/swarm-search.mp4) |
+| [Download full MP4 · 20 s](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/target-tracking.mp4) · [File page](docs/media/target-tracking.mp4) | [Download full MP4 · 20 s](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/swarm-search.mp4) · [File page](docs/media/swarm-search.mp4) |
+
+GIFs play inline. Download the full MP4 files for local playback, or click a preview to open its repository file page.
 
 These recordings show the original development environment; GIFs are short previews. See the [validation record](docs/validation.md) for the reproduction scope of the open-source workspace and the [media notes](docs/media/README.md) for asset details.
 

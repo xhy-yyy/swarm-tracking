@@ -44,8 +44,10 @@ Swarm Tracking 将多机感知、目标融合、任务分配、局部规划与�
 
 | 视觉检测与目标跟踪 | 多机搜索场景俯视 |
 | :---: | :---: |
-| [![视觉检测与目标跟踪动态预览](docs/media/target-tracking.gif)](docs/media/target-tracking.mp4?raw=1) | [![多机搜索场景俯视动态预览](docs/media/swarm-search.gif)](docs/media/swarm-search.mp4?raw=1) |
-| [观看 / 下载完整 MP4 · 20 秒](docs/media/target-tracking.mp4?raw=1) | [观看 / 下载完整 MP4 · 20 秒](docs/media/swarm-search.mp4?raw=1) |
+| [![视觉检测与目标跟踪动态预览](docs/media/target-tracking.gif)](docs/media/target-tracking.mp4) | [![多机搜索场景俯视动态预览](docs/media/swarm-search.gif)](docs/media/swarm-search.mp4) |
+| [下载完整 MP4 · 20 秒](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/target-tracking.mp4) · [文件页](docs/media/target-tracking.mp4) | [下载完整 MP4 · 20 秒](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/swarm-search.mp4) · [文件页](docs/media/swarm-search.mp4) |
+
+动图可直接预览；完整 MP4 可下载后播放，点击预览图可进入仓库文件页。
 
 演示素材来自原开发环境，动图为片段预览。当前开源版本的构建、测试与复现范围见 [验证记录](docs/validation.md)；素材说明见 [媒体目录](docs/media/README.md)。
 
