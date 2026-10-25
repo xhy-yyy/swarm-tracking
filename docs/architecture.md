@@ -16,7 +16,8 @@ flowchart LR
     F --> J[比赛计分脚本]
 ```
 
-`scripts/run_mission.sh` 包装既有 `start_swarm.sh`，依次启动：
+任务主入口 `src/fly_px4/scripts/start_swarm.sh` 依次启动以下部分；直接使用时
+需先 `source scripts/env.sh`。`scripts/run_mission.sh` 封装同一入口并自动加载环境。
 
 1. `swarm_relay_ego.launch`：六机世界坐标桥接、激光/深度高度带点云、EGO 和轨迹服务器。
 2. `swarm_track.launch`：六路图像批量检测、目标融合分配和标注图窗口。

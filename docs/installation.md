@@ -116,8 +116,14 @@ bash scripts/run_simulation.sh base1
 # 终端 2
 bash scripts/run_actors.sh both
 # 终端 3
-bash scripts/run_mission.sh base1
+source scripts/env.sh
+bash src/fly_px4/scripts/start_swarm.sh base1
 ```
+
+`start_swarm.sh` 是任务主入口，启动规划、视觉融合与六机任务控制。
+`bash scripts/run_mission.sh base1` 是同一入口的简短封装，会自动加载
+`scripts/env.sh`。仿真与任务的地图参数须一致；建议显式选择
+`base1/base2/base3`，任务脚本不传参数时默认选择历史 `base0` 路线。
 
 主线默认显示六路标注图，需要图形桌面。无显示器调试时，单独启动
 `roslaunch fly_px4 swarm_track.launch annotated:=false`，并按架构文档启动
