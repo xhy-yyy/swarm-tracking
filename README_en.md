@@ -17,6 +17,7 @@
   <a href="#capabilities">Capabilities</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="#quick-start">Quick start</a> ·
+  <a href="#vision-environment">Vision environment</a> ·
   <a href="#documentation">Documentation</a> ·
   <a href="README.md">中文</a>
 </p>
@@ -93,7 +94,7 @@ bash scripts/install_dependencies.sh
 bash scripts/build.sh
 ```
 
-Before running, follow the [installation guide](docs/installation.md) to **build PX4 and its plugins, install model and weight assets, and create the vision environment**. Meshes, textures, and detector weights are distributed separately from the source repository.
+Before running, follow the [installation guide](docs/installation.md) to **build PX4 and its plugins and install model and weight assets**, then configure the [vision environment](#vision-environment) below. Meshes, textures, and detector weights are distributed separately from the source repository.
 
 ```bash
 # First-time setup: set the actual VISION_PYTHON path in runtime.env.
@@ -152,6 +153,49 @@ bash src/fly_px4/scripts/start_swarm.sh --list-routes
 bash src/fly_px4/scripts/start_swarm.sh --help
 ```
 
+## Vision environment
+
+The project uses **system ROS Python plus a separate vision environment**. ROS builds, mission control, target fusion, and the image viewer use system Python 3.8. The `swarm_vision` detector runs with the Python 3.10 interpreter selected by `VISION_PYTHON`; ROS launch terminals do not need the vision Conda environment activated.
+
+| Vision dependency | Recorded version | Purpose |
+| --- | --- | --- |
+| Python | `3.10` | Separate vision interpreter. |
+| PyTorch / torchvision | `2.12.0` / `0.27.0` | YOLO inference and vision operators; use matching CUDA or CPU builds. |
+| Ultralytics | `8.4.57` | Project YOLO checkpoint loading. |
+| NumPy / SciPy | `2.2.6` / `1.15.3` | Image arrays, geometry, and numerical dependencies. |
+| OpenCV | `4.13.0.92` | Detection annotations; pip package `opencv-python`. |
+| PyYAML / rospkg | `6.0.3` / `1.6.1` | Configuration parsing and ROS Python package support. |
+
+From the cloned repository root:
+
+```bash
+conda env create -f environment.yml
+conda activate swarm-vision
+python -m pip check
+python -c "import sys; print(sys.executable)"
+```
+
+Set `VISION_PYTHON` in `config/runtime.env` to the **actual absolute interpreter path** printed above:
+
+```bash
+# Copy config/runtime.env.example on first use.
+VISION_PYTHON="/absolute/path/to/swarm-vision/bin/python"
+# Optionally set SWARM_WEIGHTS for a compatible checkpoint at another location.
+```
+
+The default checkpoint is `assets/weights/best_11s_new.pt`, distributed separately from Git. After installing the weight asset, run `python3 scripts/check_assets.py --weights-only`. See the [model card](docs/model_card.md) for the required class order.
+
+In a **ROS terminal with Conda deactivated**, check the complete import path from the repository root:
+
+```bash
+source scripts/env.sh
+"$VISION_PYTHON" -c "import torch, torchvision, ultralytics, cv2, rospy; from track_msgs.msg import DetectionArray; print('Vision imports OK'); print('CUDA:', torch.cuda.is_available(), 'runtime:', torch.version.cuda)"
+```
+
+The detector defaults to `cuda:0` with half precision. When CUDA is unavailable, it falls back to CPU and disables half precision. A compatible NVIDIA GPU is recommended for six camera streams; CPU fallback does not guarantee the configured inference rate.
+
+Choose a CUDA build compatible with the GPU and driver. The [complete vision setup guide](docs/vision_environment.md) covers GPU/CPU wheels, ROS and `cv_bridge` separation, model inference checks, and troubleshooting (Chinese).
+
 ## Configuration
 
 | File | Purpose |
@@ -180,6 +224,7 @@ The detailed technical guides are currently in Chinese.
 | Guide | Contents |
 | --- | --- |
 | [Installation and operation](docs/installation.md) | Dependencies, PX4, vision environment, assets, and startup. |
+| [Vision environment](docs/vision_environment.md) | Dependency versions, Conda, CUDA, interpreter configuration, weights, and inference checks. |
 | [Architecture](docs/architecture.md) | Packages, nodes, and mission startup. |
 | [Topics and frames](docs/topics_and_frames.md) | ROS interfaces, messages, and coordinate conventions. |
 | [Troubleshooting](docs/troubleshooting.md) | Vision, models, libraries, MAVROS, and route configuration. |

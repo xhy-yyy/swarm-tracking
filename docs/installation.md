@@ -81,8 +81,15 @@ sudo bash scripts/install_geographiclib_datasets.sh
 
 ## 视觉环境
 
+检测节点使用独立 Python 3.10 环境；ROS 构建、融合和显示节点保留系统
+Python 3.8。依赖版本、CUDA/CPU 安装选择、消息导入和权重推理自检见
+[视觉环境完整指南](vision_environment.md)。以下是默认安装方式。
+
 ```bash
 conda env create -f environment.yml
+conda activate swarm-vision
+python -m pip check
+python -c "import sys; print(sys.executable)"
 ```
 
 如果需要其他 CUDA 构建，先按 PyTorch 对应硬件的安装方式安装 `torch` 和
@@ -93,10 +100,10 @@ Python 通过 `PYTHONPATH` 导入 ROS 的 Python 消息模块。当前检测节�
 创建本地配置：
 
 ```bash
-cp config/runtime.env.example config/runtime.env
+cp -n config/runtime.env.example config/runtime.env
 ```
 
-在其中填写真实解释器路径：
+在其中填写上方命令输出的真实解释器绝对路径：
 
 ```bash
 VISION_PYTHON="/path/to/conda/envs/swarm-vision/bin/python"
@@ -104,6 +111,13 @@ VISION_PYTHON="/path/to/conda/envs/swarm-vision/bin/python"
 
 也可设置 `PX4_DIR` 和 `SWARM_WEIGHTS`。`config/runtime.env` 已被 Git 忽略。
 权重若换成其他训练结果，需要保持检测类别顺序与 `swarm_vision.py` 一致。
+
+任务启动使用未激活 Conda 的 ROS 终端；检测节点会通过 `VISION_PYTHON`
+调用视觉解释器。构建完成并加载 `source scripts/env.sh` 后，应能执行：
+
+```bash
+"$VISION_PYTHON" -c "import torch, torchvision, ultralytics, cv2, rospy; from track_msgs.msg import DetectionArray; print('Vision imports OK'); print('CUDA:', torch.cuda.is_available())"
+```
 
 ## 启动
 

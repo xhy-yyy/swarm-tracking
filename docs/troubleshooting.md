@@ -5,6 +5,9 @@
 复制 `config/runtime.env.example` 为 `config/runtime.env`，填写
 `VISION_PYTHON`。确认 `python3 scripts/check_assets.py --weights-only` 通过。
 检测环境需能导入 `torch`、`ultralytics` 和 ROS Python 消息。
+按 [视觉环境指南](vision_environment.md) 依次检查解释器路径、CUDA、
+ROS 消息导入和权重推理；其中也说明了 `torchvision::nms`、`cv_bridge`
+与 NumPy 二进制扩展报错的排查方法。
 
 ## EGO 节点出现符号或共享库错误
 

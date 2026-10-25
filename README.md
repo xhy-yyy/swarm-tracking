@@ -17,6 +17,7 @@
   <a href="#核心能力">核心能力</a> ·
   <a href="#系统架构">系统架构</a> ·
   <a href="#快速开始">快速开始</a> ·
+  <a href="#视觉环境">视觉环境</a> ·
   <a href="#文档">文档</a> ·
   <a href="README_en.md">English</a>
 </p>
@@ -93,7 +94,7 @@ bash scripts/install_dependencies.sh
 bash scripts/build.sh
 ```
 
-运行前，请按 [安装说明](docs/installation.md) 完成 **PX4 与插件构建、模型和权重资源安装、视觉环境创建**。模型网格、纹理和检测权重通过独立资源包提供，源码仓库不包含这些大文件。
+运行前，请按 [安装说明](docs/installation.md) 完成 **PX4 与插件构建、模型和权重资源安装**，并按下方 [视觉环境](#视觉环境) 配置 YOLO 推理环境。模型网格、纹理和检测权重通过独立资源包提供，源码仓库不包含这些大文件。
 
 ```bash
 # 首次配置：在 runtime.env 中填写实际的 VISION_PYTHON 路径。
@@ -152,6 +153,49 @@ bash src/fly_px4/scripts/start_swarm.sh --list-routes
 bash src/fly_px4/scripts/start_swarm.sh --help
 ```
 
+## 视觉环境
+
+项目采用 **系统 ROS 环境 + 独立视觉环境**：ROS 构建、任务控制、目标融合与画面显示使用系统 Python 3.8；`swarm_vision` 检测节点由 `VISION_PYTHON` 指定的 Python 3.10 解释器运行。无需在 ROS 启动终端激活视觉 Conda 环境。
+
+| 视觉依赖 | 原环境记录版本 | 用途 |
+| --- | --- | --- |
+| Python | `3.10` | 独立视觉解释器。 |
+| PyTorch / torchvision | `2.12.0` / `0.27.0` | YOLO 推理与视觉算子，须安装相互匹配的 CUDA 或 CPU 构建。 |
+| Ultralytics | `8.4.57` | 加载项目 YOLO 检测权重。 |
+| NumPy / SciPy | `2.2.6` / `1.15.3` | 图像数组、几何与数值计算依赖。 |
+| OpenCV | `4.13.0.92` | 检测图像标注；pip 包名为 `opencv-python`。 |
+| PyYAML / rospkg | `6.0.3` / `1.6.1` | 配置解析与 ROS Python 包支持。 |
+
+在已克隆的仓库根目录创建环境：
+
+```bash
+conda env create -f environment.yml
+conda activate swarm-vision
+python -m pip check
+python -c "import sys; print(sys.executable)"
+```
+
+将最后一条命令输出的**实际解释器绝对路径**填入 `config/runtime.env`：
+
+```bash
+# 首次使用时，从 config/runtime.env.example 复制配置文件。
+VISION_PYTHON="/absolute/path/to/swarm-vision/bin/python"
+# 如使用其他位置的同类别权重，可另行配置 SWARM_WEIGHTS。
+```
+
+默认权重为 `assets/weights/best_11s_new.pt`，不随 Git 源码提供；安装权重资源后可运行 `python3 scripts/check_assets.py --weights-only` 校验。检测类别顺序见 [模型说明](docs/model_card.md)。
+
+在**未激活 Conda 的 ROS 终端**中，从仓库根目录检查环境是否贯通：
+
+```bash
+source scripts/env.sh
+"$VISION_PYTHON" -c "import torch, torchvision, ultralytics, cv2, rospy; from track_msgs.msg import DetectionArray; print('Vision imports OK'); print('CUDA:', torch.cuda.is_available(), 'runtime:', torch.version.cuda)"
+```
+
+默认检测设备为 `cuda:0`，启用半精度；CUDA 不可用时，代码会回退 CPU 并关闭半精度。六路推理建议使用兼容的 NVIDIA GPU，CPU 回退时不保证原任务频率。
+
+CUDA 构建需匹配显卡与驱动。不同机器安装步骤、GPU/CPU wheel 选择、ROS 与 `cv_bridge` 的环境隔离、模型推理自检和常见报错见 [视觉环境完整指南](docs/vision_environment.md)。
+
 ## 关键配置
 
 | 配置文件 | 用途 |
@@ -178,6 +222,7 @@ bash scripts/test.sh
 | 文档 | 内容 |
 | --- | --- |
 | [安装与运行](docs/installation.md) | 系统依赖、PX4、视觉环境、资源安装与启动。 |
+| [视觉环境](docs/vision_environment.md) | 依赖版本、Conda、CUDA、解释器配置、权重与推理自检。 |
 | [系统结构](docs/architecture.md) | 包职责、节点关系与任务启动链路。 |
 | [话题与坐标系](docs/topics_and_frames.md) | ROS 接口、消息和坐标约定。 |
 | [常见问题](docs/troubleshooting.md) | 视觉环境、模型、运行库、MAVROS 与路线排查。 |
