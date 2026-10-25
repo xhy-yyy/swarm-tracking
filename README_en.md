@@ -42,12 +42,20 @@ Built on **ROS Noetic, PX4 SITL, Gazebo Classic, and a modified EGO-Swarm planne
   <sub>Six onboard detection views during a simulation mission</sub>
 </p>
 
-| Visual detection and target tracking | Swarm search: overhead view |
+| Visual detection and target tracking | Multi-UAV obstacle avoidance |
 | :---: | :---: |
-| [![Animated target tracking preview](docs/media/target-tracking.gif)](docs/media/target-tracking.mp4) | [![Animated overhead search preview](docs/media/swarm-search.gif)](docs/media/swarm-search.mp4) |
+| [![Animated target tracking preview](docs/media/target-tracking.gif)](docs/media/target-tracking.mp4) | [![Animated multi-UAV obstacle avoidance preview](docs/media/swarm-search.gif)](docs/media/swarm-search.mp4) |
 | [Download full MP4 · 20 s](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/target-tracking.mp4) · [File page](docs/media/target-tracking.mp4) | [Download full MP4 · 20 s](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/swarm-search.mp4) · [File page](docs/media/swarm-search.mp4) |
 
 GIFs play inline. Download the full MP4 files for local playback, or click a preview to open its repository file page.
+
+### Full demonstration video
+
+A complete recording of cooperative search and target tracking, showing six onboard views and mission scoring. Duration: approximately **41 seconds**.
+
+[![Full demonstration video poster: six detection views and mission scoring](docs/media/full-demo-poster.jpg)](docs/media/full-demo.mp4)
+
+[Download full demonstration MP4 · 41 s](https://raw.githubusercontent.com/xhy-yyy/swarm-tracking/main/docs/media/full-demo.mp4) · [File page](docs/media/full-demo.mp4)
 
 These recordings show the original development environment; GIFs are short previews. See the [validation record](docs/validation.md) for the reproduction scope of the open-source workspace and the [media notes](docs/media/README.md) for asset details.
 
